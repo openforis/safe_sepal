@@ -86,7 +86,6 @@ lulcdir   <- paste0(rootdir,"data_in/lu-lc/")
 gfcdir    <- paste0(rootdir,"data_in/gfc/")
 waterdir  <- paste0(rootdir,"data_in/water/")
 denspopdir<- paste0(rootdir,"data_in/denspop/")
-roadsdir  <- paste0(rootdir, "data_in/roads/Roads/")
 srtmdir   <- paste0(rootdir,"data_in/srtm/") 
 elecdir   <- paste0(rootdir,"data_in/electricity/")
 
@@ -103,7 +102,6 @@ dir.create(lulcdir,showWarnings = F)
 dir.create(gfcdir,showWarnings = F)
 dir.create(waterdir,showWarnings = F)
 dir.create(denspopdir,showWarnings = F)
-dir.create(roadsdir, showWarnings = F)
 dir.create(srtmdir,showWarnings = F)
 dir.create(elecdir,showWarnings = F)
 
@@ -308,12 +306,12 @@ plot(edu_shp)
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
                paste0(data0dir,"educationcode.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir,"education_comp.tif"),
+               paste0(griddir,"mask0.tif"),
+               paste0(data0dir,"education.tif"),
                "edctn_c"
 ))
-plot(raster(paste0(data0dir, "education_comp.tif")))
-gdalinfo(paste0(data0dir,"education_comp.tif"),mm=T)
+plot(raster(paste0(educdir, "education.tif")))
+gdalinfo(paste0(data0dir,"education.tif"),mm=T)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 3/ HEALTH  
@@ -500,61 +498,8 @@ gdalinfo(paste0(data0dir,"openareascode.tif",mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 7/ ROADS  
+# OR SEE : https://data.humdata.org/dataset/niger-roads (need to check)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-##################### FROM HUMDATA 
-# MORE INFO : https://data.humdata.org/dataset/niger-roads
-url <- "https://data.humdata.org/dataset/a388fd5d-0dbd-4d05-b047-7f5db50838dc/resource/06eb9b57-b170-4fd7-82f4-0c34ae52f4a7/download/roads.zip"
-file <- "roads.zip"
-
-download.file(url = url,
-              destfile = paste0(roadsdir,file))
-
-system(sprintf("unzip -o %s -d %s",
-               paste0(roadsdir,file),
-               roadsdir))
-
-roads_humdata  <- readOGR(paste0(roadsdir,"NER_Road.shp"))
-head(roads_humdata)
-plot(roads_humdata)
-levels(as.factor(roads_humdata$NAME))
-levels(as.factor(roads_humdata$ETYPE))
-levels(as.factor(roads_humdata$CAcorridor))
-levels(as.factor(roads_humdata$Corridors))
-
-#0 is NODATA in "NAME" ---> Correspond to unspecified roads 
-roads_humdata$roads_code <- 1
-#1 is Autoroutes roads
-roads_humdata$roads_code[which(grepl("A",roads_humdata$NAME))]<-2
-#2 is National roads
-roads_humdata$roads_code[which(grepl("N",roads_humdata$NAME))]<-3
-#3 is Regional roads
-roads_humdata$roads_code[which(grepl("R",roads_humdata$NAME))]<-4
-
-roads_humdata
-head(roads_humdata)
-plot(roads_humdata)
-
-## REPROJECT
-roads_humdata_utm <- spTransform(roads_humdata, crs(mask0))
-roads_humdata_utm_extent <- crop(roads_humdata_utm,(aoi_utm))
-writeOGR(roads_humdata_utm_extent, paste0(data0dir,"roads_humdata.shp"), layer= "roads_humdata.shp",driver='ESRI Shapefile', overwrite=T)
-levels(as.factor(roads_humdata$roads_code))
-#check the column name: 
-#roads_humdata  <- readOGR(paste0(data0dir,"roads_humdata.shp"))
-#head(roads_humdata)
-
-## RASTERIZE 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"roads_humdata.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "roads_humdata.tif"),
-               "roads_code"
-))
-plot(raster(paste0(data0dir, "roads_humdata.tif")))
-gdalinfo(paste0(data0dir,"roads_humdata.tif",mm=T))
-
-##################### FROM OSM DATA 
 # fclass -> Major roads -> "motorway", "trunk", "primary", "secondary" and "tertiary"
 roads     <- readOGR(paste0(tmpdir,"gis_osm_roads_free_1.shp"))
 head(roads)
