@@ -73,7 +73,7 @@ rootdir <- ("~/safe_sepal")
 setwd(rootdir)
 rootdir <- paste0(getwd(),"/")
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++s
 # +003 CREATING OBJECTS ON SEPAL
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 scriptdir <- paste0(rootdir,"scripts/")
@@ -193,7 +193,7 @@ aoi_utm
 # I/ SHAPEFILES 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-##################### GET OSM DATA 
+ ##################### GET OSM DATA 
 #See details on : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 url <- "http://download.geofabrik.de/africa/niger-latest-free.shp.zip"
 file <- "niger-latest-free.shp.zip"
@@ -807,7 +807,7 @@ prec        <- getData('worldclim',
                        res=0.5, 
                        lon=8,
                        lat=16
-)
+                      )
 hist(prec, plot=TRUE)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -832,9 +832,52 @@ hist(alt, plot=TRUE)
 #??getData
 
 slope         <- getData('SRTM', 
-                         lon=8, 
-                         lat=16)
+                          lon=8, 
+                          lat=16)
 hist(slope, plot=TRUE)
-
 #####################   CHECK YOUR DATA0 FILE : YOU SHOULD HAVE ALL THE FILES IN .tif AND UTM
 ?ls
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +008 LU-LC ----> Need to work on it <-----
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +009 GFC ----> Need to work on it <-----
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+##################### CHECK WHICH GFC TILES FALL ON IT
+#Calculate the GFC product tiles needed for a given AOI
+#https://cran.r-project.org/web/packages/gfcanalysis/gfcanalysis.pdf
+tiles           <- calc_gfc_tiles(aoi_utm)
+
+plot(tiles)
+plot(aoi)
+
+##################### DOWNLOAD IF NECESSARY
+#https://cran.r-project.org/web/packages/gfcanalysis/gfcanalysis.pdf
+download_tiles(tiles,output_folder = gfcdir,images = c("treecover2000","lossyear","gain","datamask") )
+
+
+##################### REPROJECT IN THE CORRECT SYSTEM -> use mask0
+
+for(file in list.files(gfcdir,glob2rx("Hansen*.tif"))){
+  input <- paste0(gfcdir,file)
+  
+  system(sprintf("gdal_translate -co COMPRESS=LZW  -projwin %s %s %s %s %s %s",
+                 extent(mask0)@xmin,
+                 extent(mask0)@ymax,
+                 extent(mask0)@xmax,
+                 extent(mask0)@ymin,
+                 input,
+                 paste0(gfcdir,"crop_",file)
+  ))
+  
+  system(sprintf("gdalwarp -co COMPRESS=LZW  -t_srs \"%s\" %s %s",
+                 "+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0",
+                 paste0(gfcdir,"crop_",file),
+                 paste0(gfcdir,"utm_crop_",file)
+  ))
+}
+
+
