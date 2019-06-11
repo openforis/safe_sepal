@@ -130,7 +130,6 @@ aoi        <- getData('GADM',
 plot(aoi)
 aoi
 
-
 aoi2        <- getData('GADM',
                       path=admdir,
                       country= "NER",
@@ -143,6 +142,7 @@ writeOGR(aoi2_utm,paste0(data0dir,"boundaries_level3.shp"),"boundaries_level3","
 EPSG0 <- CRS("+init=epsg:32631")
 aoi_utm<-spTransform(aoi, EPSG0)
 aoi_utm
+aoi_utm@bbox
 
 ## CREATE A RASTER LAYER BOX WITH INTEGER COLUMNS AND LINES / DEFINITION OF THE RESOLUTION, EXTENT AND CS
 res0      <- 30
@@ -194,17 +194,16 @@ mask0
 mask0_comp <- raster(paste0(griddir,"mask0_comp.tif"))
 mask0_comp
 
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### COUNTRY'S BOUNDARIES 
+##################### COUNTRY'S BOUNDARIES ---> Should have the same extent as "mask0" (?) 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-aoi_utm 
+aoi_utm
 writeOGR(aoi_utm,paste0(data0dir,"boundaries.shp"),"boundaries","ESRI Shapefile",overwrite_layer = T)
 
 aoi_utm    <- readOGR(paste0(data0dir,"boundaries.shp"))
-plot(aoi_utm)
-aoi_utm
+plot(mask0)
+plot(aoi_utm, add=T)
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1028,7 +1027,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 plot(raster(paste0(data0dir, "electricity_code.tif")))
 gdalinfo(paste0(data0dir,"electricity_code.tif",mm=T))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# II/ RASTERS ----> WORK TO BE CONTINUED<-----
+# II/ RASTERS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1049,55 +1048,45 @@ system(sprintf("unzip -o %s -d %s",
                denspopdir))
 
 # READ THE RASTER FILE AND VISUALIZE IT
-
 file2 <- "NER15adjv4.tif" 
 denspop <- raster(paste0(denspopdir,file2))
 
 plot(denspop)
 denspop
 
-# TRANSFORM THE COORDINATE SYSTEM -- USING ESPG0: +proj=utm
+# TRANSFORM THE COORDINATE SYSTEM -- USING EPSG0: +proj=utm
 proj4string(denspop)
 EPSG0
 denspop_utm <- projectRaster(denspop, crs = EPSG0) 
 denspop_utm
+#saved in the setwd -> "~/safe_sepal/data_in/"
+writeRaster(denspop_utm,"denspop_utm.tif",format='GTiff',overwrite=TRUE)
 
 # TRANSFORM THE EXTENT -- USING THE EXTENT OF MASK0
+mask0
+denspop_utm <- raster(paste0(datadir,"denspop_utm.tif"))
+bb <- extent(194610, 1865340, 1293120,2630580)
+extent(denspop) <- bb
+denspop_utm_extent <- setExtent(denspop_utm, bb,keepres=TRUE)
+denspop_utm_extent
+#saved in the setwd -> "~/safe_sepal/data_in/"
+writeRaster(denspop_utm_extent,"denspop_utm_extent.tif",format='GTiff',overwrite=TRUE)
 
-bb<- extent(raster(mask0))
+denspop_utm_extent <- raster(paste0(datadir,"denspop_utm_extent.tif"))
 
-extent(raster(denspop_utm))
+# TRANSFORM THE RESOLUTION -- USING THE RESOLUTION OF MASK0
 
-if(!file.exists(denspop_utm_extent)){
-  system(sprintf("gdal_translate -ot Byte -projwin %s %s %s %s -co COMPRESS=LZW %s %s",
-                 floor(bb@xmin),
-                 ceiling(bb@ymax),
-                 ceiling(bb@xmax),
-                 floor(bb@ymin),
-                 denspop_utm,
-                 denspop_utm_extent
-  ))
-}
-extent(raster(denspop_utm_extent))
+res(mask0)
+res(denspop_utm_extent)
+#disaggregate from 88.7 x 92.5 resolution to 30x30 (factor = 3)
+denspop_utm_extent_res <- disaggregate(denspop_utm_extent, fact=3)
+res(denspop_utm_extent_res)
+writeRaster(denspop_utm_extent_res,"denspop_utm_extent_res.tif",format='GTiff',overwrite=TRUE)
 
-
-# Latlong projection used to reproject data
-
-
-# ?? Use gdal warp to transform the raster 1 to raster 2
-
-# ?? USE MASK0 TO GET THE SAME EXTENT AND RESOLUTION ??
-# MASK0 IS A LAYER THAT HAS VALUES OF 0 AND 1 -> 0= outside of Niger 
-#                                             -> 1= inside of Niger
-# /!\ error : different resolution.....
-denspop_utm_mask <- denspop_utm*mask0
-
-# WRITE THE RASTER FILE FROM A "RasterLayer" FILE -> where is it saved?
-writeRaster(denspop_utm_mask,"denspop.tif",format='GTiff',overwrite=TRUE)
+# ?? Use gdal warp to transform the raster 1 to raster 2 to direclty use mask0 ??
 
 
-
-
+##################### ----> WORK TO BE CONTINUED<----- #####################
 
 ##################### 1.2/ FROM HUMDATA 
 # https://data.humdata.org/organization/ocha-niger
@@ -1107,7 +1096,6 @@ file <- "ner_ppp_2018.tif"
 
 download.file(url = url,
               destfile = paste0(denspopdir,file))
-
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 2/ PRECIPITATION
@@ -1156,11 +1144,11 @@ hist(slope, plot=TRUE)
 ?ls
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +008 LU-LC ----> Need to work on it <-----
+# +008 LU-LC 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +009 GFC ----> Need to work on it <-----
+# +009 GFC 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ##################### CHECK WHICH GFC TILES FALL ON IT
