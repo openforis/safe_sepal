@@ -1,7 +1,7 @@
 ####################################################################################
 ####### Object:  Suitability map - Site locations selection for displacement settings           
 ####### Author:  sarah.wertz@fao.org                        
-####### Update:  2019/06/06                                  
+####### Update:  2019/06/11                                  
 ####################################################################################
 rm(list=ls())
 
@@ -22,10 +22,10 @@ rm(list=ls())
 # #    #            6/ OPEN AREAS  
 # #    #            7/ ROADS 
 # #    #            8/ TOWNS 
-# #    #            9/ WATER POIS
-# #    #            10/WATER OSM  
-# #    #            11/WATERWAYS OSM  
-# #    #            12/WATER NATURAL OSM 
+# #    #            9/ WATER POIS - drinking_water/fountain/water_tower/water_well/water_works
+# #    #            10/WATER OSM - reservoir/river/water
+# #    #            11/WATERWAYS OSM  - canal/drain/river/stream
+# #    #            12/WATER NATURAL OSM - spring
 # #    #            13/ELECTRIC LINES 
 # #    II/ RASTERS 
 # #    #            1/ POPULATION DENSITY 
@@ -63,8 +63,8 @@ packages(ggplot2)
 packages(devtools)
 packages(maptools)
 
-packages(rJava)
-packages(xlsx)
+#packages(rJava)
+#packages(xlsx)
 
 install_github('yfinegold/gfcanalysis')
 packages(gfcanalysis)
@@ -547,7 +547,7 @@ writeOGR(wetland_osm_only_utm_extent, paste0(data0dir, "wetland_osmcode.shp"),la
 
 wetland_osm_shp    <- readOGR(paste0(data0dir,"wetland_osmcode.shp"))
 head(wetland_osm_shp)
-
+plot(wetland_osm_shp)
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
@@ -626,7 +626,7 @@ levels(as.factor(roads_humdata$ETYPE))
 levels(as.factor(roads_humdata$CAcorridor))
 levels(as.factor(roads_humdata$Corridors))
 
-#0 is NODATA in "NAME" ---> Correspond to unspecified roads 
+#0 in "NAME" ---> Correspond to unspecified roads 
 roads_humdata$roads_code <- 1
 #1 is Autoroutes roads
 roads_humdata$roads_code[which(grepl("A",roads_humdata$NAME))]<-2
@@ -644,9 +644,9 @@ roads_humdata_utm <- spTransform(roads_humdata, crs(mask0))
 roads_humdata_utm_extent <- crop(roads_humdata_utm,(aoi_utm))
 writeOGR(roads_humdata_utm_extent, paste0(data0dir,"roads_humdata.shp"), layer= "roads_humdata.shp",driver='ESRI Shapefile', overwrite=T)
 levels(as.factor(roads_humdata$roads_code))
-#check the column name: 
-#roads_humdata  <- readOGR(paste0(data0dir,"roads_humdata.shp"))
-#head(roads_humdata)
+ 
+roads_humdata  <- readOGR(paste0(data0dir,"roads_humdata.shp"))
+head(roads_humdata)
 
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
@@ -738,7 +738,11 @@ settlements_humdata_utm_extent <- crop(settlements_humdata_utm,(aoi_utm))
 
 writeOGR(settlements_humdata_utm, paste0(data0dir,"settlements_humdata.shp"), layer= "settlements_humdata.shp",driver='ESRI Shapefile', overwrite=T)
 
-##################### FROM OSM DATA 
+settlements_humdata_shp    <- readOGR(paste0(data0dir, "settlements_humdata.shp"))
+head(settlements_humdata_shp)
+plot(settlements_humdata_shp)
+
+##################### FROM OSM DATA -> /!\ HEAVY WHEN USING OSM DATA /!\-> NEED TO COMPRESS THE SHAPEFILE?
 ## fclass -> "building"
 buildings    <- readOGR(paste0(tmpdir,"gis_osm_buildings_a_free_1.shp"))
 levels(as.factor(buildings$fclass))
@@ -753,6 +757,7 @@ buildings<-spTransform(buildings, crs(mask0))
 buildings
 buildings_utm_extent <- crop(buildings,aoi_utm)
 plot(buildings_utm_extent)
+
 writeOGR(buildings, paste0(data0dir,"buildingscode.shp"), layer= "buildingscode.shp",driver='ESRI Shapefile', overwrite=T)
 
 buildings_shp    <- readOGR(paste0(data0dir, "buildingscode.shp"))
@@ -804,7 +809,7 @@ water_pois_only_utm_extent <- crop(water_pois_only_utm,(aoi_utm))
 writeOGR(water_pois_only_utm, paste0(data0dir, "water_pois_code.shp"), layer= "water_pois_code.shp", driver='ESRI Shapefile', overwrite=T)
 
 water_pois_shp    <- readOGR(paste0(data0dir,"water_pois_code.shp"))
-water_pois_shp
+plot(water_pois_shp)
 head(water_pois_shp)
 
 ## RASTERIZE 
@@ -844,10 +849,16 @@ levels(as.factor(water_osm_only$fclass))
 
 ## REPROJECT
 water_osm_only_utm <-spTransform(water_osm_only, crs(mask0))
+
+#/!\focusing on Niger ---->>>> CROPPING WORKED? 
+water_osm_only_utm_extent <- crop(water_osm_only_utm,(aoi_utm))
+
 writeOGR(water_osm_only_utm, paste0(data0dir, "water_osmcode.shp"),layer="water_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
 
 water_osm_shp    <- readOGR(paste0(data0dir,"water_osmcode.shp"))
 head(water_osm_shp)
+plot(water_osm_shp)
+plot(aoi_utm,add=T)
 
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
@@ -884,11 +895,17 @@ head(waterways_osm)
 #Use a filter function to only take into account the points related to water 
 waterways_osm_only <- waterways_osm[waterways_osm$waterways_code !=0,]
 str(waterways_osm_only@data)
-levels(as.factor(waterways_osm_only$fclass))
+levels(as.factor(waterways_osm_only$waterways_code))
 
 ## REPROJECT
 waterways_osm_only_utm<-spTransform(waterways_osm_only, crs(mask0))
-writeOGR(waterways_osm_only_utm, paste0(data0dir, "waterways_osm_code.shp"), layer="waterways_osm_code.shp", driver='ESRI Shapefile', overwrite=T)
+
+#/!\focusing on Niger 
+waterways_osm_only_utm_extent <- crop(waterways_osm_only_utm,(aoi_utm))
+plot(waterways_osm_only_utm_extent)
+plot(aoi_utm,add=T)
+
+writeOGR(waterways_osm_only_utm_extent, paste0(data0dir, "waterways_osm_code.shp"), layer="waterways_osm_code.shp", driver='ESRI Shapefile', overwrite=T)
 
 waterways_osm_shp    <- readOGR(paste0(data0dir, "waterways_osm_code.shp"))
 head(waterways_osm_shp)
@@ -921,10 +938,16 @@ head(water_natural)
 #Use a filter function to only take into account the points related to water 
 water_natural_only <- water_natural[water_natural$water_code !=0,]
 str(water_natural_only@data)
-levels(as.factor(water_natural_only$fclass))
+levels(as.factor(water_natural_only$water_code))
 
 ## REPROJECT
 water_natural_only_utm<-spTransform(water_natural_only, crs(mask0))
+
+#/!\focusing on Niger ----> PROBLEM WHEN CROPPING /!\
+water_natural_only_utm_extent <- crop(water_natural_only_utm,(aoi_utm))
+plot(water_natural_only_utm_extent)
+plot(aoi_utm,add=T)
+
 writeOGR(water_natural_only_utm, paste0(data0dir,"water_naturalcode.shp"), layer = "water_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
 
 water_natural_shp    <- readOGR(paste0(data0dir,"water_naturalcode.shp"))
@@ -964,9 +987,9 @@ levels(as.factor(electricity$status))
 levels(as.factor(electricity$source))
 levels(as.factor(electricity$year))
 
-#0 is NODATA
+#0 is "Planned"
 electricity$status_code <- 0
-#1 is "existing"
+#1 is "Existing"
 electricity$status_code[which(grepl("Existing",electricity$status))]<-1
 electricity
 head(electricity)
@@ -974,7 +997,7 @@ head(electricity)
 #Use a filter function to only take into account the points related to the electricity transmission network that exists already
 electricity_existing_only <- electricity[electricity$status_code !=0,]
 str(electricity_existing_only@data)
-levels(as.factor(electricity_existing_only$fclass))
+levels(as.factor(electricity_existing_only$status_code))
 
 plot(electricity_existing_only)
 plot(aoi, add=T)
@@ -991,7 +1014,6 @@ plot(aoi_utm,add=T)
 writeOGR(electricity_existing_only_utm_extent, paste0(data0dir, "electricity_code.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
 
 electricity_code    <- readOGR(paste0(data0dir,"electricity_code.shp"))
-plot(electricity_code)
 head(electricity_code)
 electricity_code
 
@@ -1010,7 +1032,7 @@ gdalinfo(paste0(data0dir,"electricity_code.tif",mm=T))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 1/ POPULATION DENSITY  ---->> problem
+##################### 1/ POPULATION DENSITY  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 1.1/ FROM ENERGYDATA.INFO   
 # https://energydata.info/dataset/niger-republic-population-density-2015
@@ -1030,14 +1052,39 @@ system(sprintf("unzip -o %s -d %s",
 
 file2 <- "NER15adjv4.tif" 
 denspop <- raster(paste0(denspopdir,file2))
+
+plot(denspop)
 denspop
 
-# TRANSFORM THE COORDINATE SYSTEM 
-
+# TRANSFORM THE COORDINATE SYSTEM -- USING ESPG0: +proj=utm
 proj4string(denspop)
 EPSG0
 denspop_utm <- projectRaster(denspop, crs = EPSG0) 
 denspop_utm
+
+# TRANSFORM THE EXTENT -- USING THE EXTENT OF MASK0
+
+bb<- extent(raster(mask0))
+
+extent(raster(denspop_utm))
+
+if(!file.exists(denspop_utm_extent)){
+  system(sprintf("gdal_translate -ot Byte -projwin %s %s %s %s -co COMPRESS=LZW %s %s",
+                 floor(bb@xmin),
+                 ceiling(bb@ymax),
+                 ceiling(bb@xmax),
+                 floor(bb@ymin),
+                 denspop_utm,
+                 denspop_utm_extent
+  ))
+}
+extent(raster(denspop_utm_extent))
+
+
+# Latlong projection used to reproject data
+
+
+# ?? Use gdal warp to transform the raster 1 to raster 2
 
 # ?? USE MASK0 TO GET THE SAME EXTENT AND RESOLUTION ??
 # MASK0 IS A LAYER THAT HAS VALUES OF 0 AND 1 -> 0= outside of Niger 
@@ -1045,17 +1092,12 @@ denspop_utm
 # /!\ error : different resolution.....
 denspop_utm_mask <- denspop_utm*mask0
 
-
 # WRITE THE RASTER FILE FROM A "RasterLayer" FILE -> where is it saved?
 writeRaster(denspop_utm_mask,"denspop.tif",format='GTiff',overwrite=TRUE)
 
-#?? Use gdal warp to transform the raster 1 to raster 2
-system(sprintf("gdalwarp -co COMPRESS=LZW  -t_srs \"%s\" %s %s",
-               "+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0",
-               paste0(denspopdir,"NER15adjv4.tif"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir,"denspop.tif")
-))
+
+
+
 
 ##################### 1.2/ FROM HUMDATA 
 # https://data.humdata.org/organization/ocha-niger
