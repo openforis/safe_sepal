@@ -15,7 +15,7 @@ rm(list=ls())
 # #    I/ SHAPEFILES 
 #      GET OSM DATA -> tmpdir
 # #    #            1/   RELIGION 
-# #    #            2-1/ WATER POIS - drinking_water/water_tower/water_well/water_works
+# #    #            2-1/ WATER POIS OSM- drinking_water/water_tower/water_well/water_works
 # #    #            2-2/ WATER OSM - reservoir/river/water
 # #    #            2-3/ WATERWAYS OSM  - canal/drain/river/stream
 # #    #            2-4/ WATER NATURAL OSM - spring
@@ -129,6 +129,13 @@ aoi        <- getData('GADM',
 plot(aoi)
 aoi
 
+## REPROJECT - SEARCH FOR YOUR COUNTRY'S COORDINATES ON https://epsg.io/
+EPSG0 <- CRS("+init=epsg:32631")
+aoi_utm<-spTransform(aoi, EPSG0)
+aoi_utm
+aoi_utm@bbox
+
+# Get the country at a "commune" scale
 aoi2        <- getData('GADM',
                        path=admdir,
                        country= "NER",
@@ -136,12 +143,6 @@ aoi2        <- getData('GADM',
 plot(aoi2)
 aoi2_utm<-spTransform(aoi2, EPSG0)
 writeOGR(aoi2_utm,paste0(data0dir,"boundaries_level3.shp"),"boundaries_level3","ESRI Shapefile",overwrite_layer = T)
-
-## REPROJECT - SEARCH FOR YOUR COUNTRY'S COORDINATES ON https://epsg.io/
-EPSG0 <- CRS("+init=epsg:32631")
-aoi_utm<-spTransform(aoi, EPSG0)
-aoi_utm
-aoi_utm@bbox
 
 ## CREATE A RASTER LAYER BOX WITH INTEGER COLUMNS AND LINES / DEFINITION OF THE RESOLUTION, EXTENT AND CS
 
@@ -497,6 +498,30 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 ))
 plot(raster(paste0(data0dir, "water_naturalcode.tif")))
 gdalinfo(paste0(data0dir,"water_naturalcode.tif",mm=T))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 2/ WATER RESSOURCES - COMPILATION 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### UNDERGROUND
+
+#READ THE SOURCE DATA
+water_pois_shp        <- readOGR(paste0(data0dir,"water_pois_code.shp"))
+water_natural_shp     <- readOGR(paste0(data0dir,"water_naturalcode.shp"))
+
+#CREATE A NEW LAYER
+# OR use a layer that already exist and add info in it
+
+
+##################### SURFACE
+
+#READ THE SOURCE DATA
+water_pois_shp        <- readOGR(paste0(data0dir,"water_pois_code.shp"))
+water_osm_shp         <- readOGR(paste0(data0dir,"water_osmcode.shp"))
+waterways_osm_shp     <- readOGR(paste0(data0dir, "waterways_osm_code.shp"))
+
+#ADD A NEW COLUMN
+# WHERE UNDERGROUND WATER = 1 AND SURFACE WATER = 2
+
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 3/ELECTRIC LINES 
@@ -866,11 +891,11 @@ health$health_code                                         <-0
 #1 is pharmacy
 health$health_code[which(grepl("pharmacy",health$fclass))] <-1
 #2 is hospital
-health$health_code[which(grepl("hospital",health$fclass))] <-2
+health$health_code[which(grepl("hospital",health$fclass))] <-1
 #3 is doctors
-health$health_code[which(grepl("doctors",health$fclass))]  <-3
+health$health_code[which(grepl("doctors",health$fclass))]  <-1
 #4 is dentist
-health$health_code[which(grepl("dentist",health$fclass))]  <-4
+health$health_code[which(grepl("dentist",health$fclass))]  <-1
 
 health
 head(health)
@@ -1187,13 +1212,22 @@ aspect_deg <- terrain(srtm_allfiles, opt='aspect', unit='degrees')
 ##################### 12/ GFC - Global Forest Change
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+packages(Hmisc)
+packages(faraway)
+packages(mgcv)
+packages(sjPlot)
+packages(sjmisc)
+
+options(stringsAsFactors = F)
+
 ##################### CHECK WHICH GFC TILES FALL ON IT
 #Calculate the GFC product tiles needed for a given AOI
 #https://cran.r-project.org/web/packages/gfcanalysis/gfcanalysis.pdf
 tiles           <- calc_gfc_tiles(aoi_utm)
 
 plot(tiles)
-plot(aoi)
+plot(aoi_utm,add=T)
+plot(aoi, add=T)
 
 ##################### DOWNLOAD IF NECESSARY
 #https://cran.r-project.org/web/packages/gfcanalysis/gfcanalysis.pdf
