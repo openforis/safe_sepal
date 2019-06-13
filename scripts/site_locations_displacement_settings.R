@@ -1,7 +1,7 @@
 ####################################################################################
 ####### Object:  Suitability map - Site locations selection for displacement settings           
 ####### Author:  sarah.wertz@fao.org                        
-####### Update:  2019/06/12                                  
+####### Update:  2019/06/13                                  
 ####################################################################################
 rm(list=ls())
 
@@ -29,12 +29,11 @@ rm(list=ls())
 # #    #            10/  UNSUITABLE AREAS
 
 # #    II/ RASTERS 
-# #    #            1/ POPULATION DENSITY 
-# #    #            2/ SRTM 
-# #    #            3/ PRECIPITATION 
-# #    #            
-# +008 LU-LC
-# +009 GFC
+# #    #            11/  SRTM 
+# #    #            12/  GLOBAL FOREST CHANGE 
+# #    #            13/  LAND USE / LAND COVER 
+# #    #            14/  POPULATION DENSITY 
+# #    #            15/  PRECIPITATIONS 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +001 INSTALLATION OF THE PACKAGES
@@ -1115,9 +1114,123 @@ gdalinfo(paste0(data0dir,"wetland_osmcode.tif",mm=T))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 1/ POPULATION DENSITY  
+##################### 11/ SRTM
+# Spatial resolution approximately 30 meter on the line of the equator : http://srtm.csi.cgiar.org/srtmdata/ 
+# DOWNLOAD MANUALLY THE TILES FALLING ON YOUR AOI
+# #OR CHECK : https://dwtkns.com/srtm30m/
+# OR CHECK : http://glcf.umd.edu/data/srtm/
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 1.1/ FROM ENERGYDATA.INFO   
+
+# READ THE RASTER FILES 
+srtm           <- list.files(path=srtmdir, pattern="*.tif", full.names=T, recursive=FALSE)
+
+# VISUALIZE THEM --> More efficient way?
+# And how to see them next to each other ?
+srtm_test37_09 <- raster(paste0(srtmdir, "srtm_37_09.tif"))
+srtm_test37_10 <- raster(paste0(srtmdir, "srtm_37_10.tif"))
+srtm_test38_08 <- raster(paste0(srtmdir, "srtm_38_08.tif"))
+srtm_test38_09 <- raster(paste0(srtmdir, "srtm_38_09.tif"))
+srtm_test38_10 <- raster(paste0(srtmdir, "srtm_38_10.tif"))
+srtm_test39_08 <- raster(paste0(srtmdir, "srtm_39_08.tif"))
+srtm_test39_09 <- raster(paste0(srtmdir, "srtm_39_09.tif"))
+srtm_test39_10 <- raster(paste0(srtmdir, "srtm_39_10.tif"))
+srtm_test40_08 <- raster(paste0(srtmdir, "srtm_40_08.tif"))
+srtm_test40_09 <- raster(paste0(srtmdir, "srtm_40_09.tif"))
+
+plot(srtm_test37_09)
+plot(srtm_test37_10)
+plot(srtm_test38_08)
+plot(srtm_test38_09)
+plot(srtm_test38_10)
+plot(srtm_test39_08)
+plot(srtm_test39_09)
+plot(srtm_test39_10)
+plot(srtm_test40_08)
+plot(srtm_test40_09)
+
+# Put all the .tif in one vrt (virtual raster) 
+srtm_allfiles  <- list.files(path=srtmdir, pattern="*.tif", full.names=T, recursive=FALSE)
+output_vrt     <- paste0(data0dir, "srtm.vrt")
+output_tif     <- paste0(data0dir, "srtm.tif")
+
+gdalbuildvrt(gdalfile = srtm_allfiles, # uses all tiffs in the folder srtmdir
+             output.vrt = output_vrt,
+             separate=F,
+             verbose=TRUE
+)
+# Copy the virtual raster in an actual physical file
+# /!\ does not work
+gdal_translate(src_dataset = output_vrt, 
+               dst_dataset = output_tif, 
+               projwin=mask0,
+               options = c("BIGTIFF=YES", "COMPRESSION=LZW")
+)
+
+# APPLY THE CHANGES (resolution, extent, coordinate system) TO ALL AT THE SAME TIME
+
+# TRANSFORM THE COORDINATE SYSTEM -- USING EPSG0: +proj=utm
+# TEST FOR 1, how to do it for all the tiles at the same time ??
+EPSG0
+srtm_test37_09 <- raster(paste0(srtmdir, "srtm_37_09.tif"))
+srtm_test37_09_utm <- projectRaster(srtm_test37_09,crs = EPSG0) 
+srtm_test37_09_utm
+# saved in the setwd --- "~/safe_sepal/data_in/"
+writeRaster(srtm_test37_09_utm,"srtm_test37_09_utm.tif",format='GTiff',overwrite=TRUE)
+
+# Calculate slope
+slope_deg <- terrain(srtm_allfiles, opt='slope', unit='degrees')
+
+# Calculate aspect
+aspect_deg <- terrain(srtm_allfiles, opt='aspect', unit='degrees')
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 12/ GFC - Global Forest Change
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+##################### CHECK WHICH GFC TILES FALL ON IT
+#Calculate the GFC product tiles needed for a given AOI
+#https://cran.r-project.org/web/packages/gfcanalysis/gfcanalysis.pdf
+tiles           <- calc_gfc_tiles(aoi_utm)
+
+plot(tiles)
+plot(aoi)
+
+##################### DOWNLOAD IF NECESSARY
+#https://cran.r-project.org/web/packages/gfcanalysis/gfcanalysis.pdf
+download_tiles(tiles,output_folder = gfcdir,images = c("treecover2000","lossyear","gain","datamask") )
+
+
+##################### REPROJECT IN THE CORRECT SYSTEM -> use mask0
+
+for(file in list.files(gfcdir,glob2rx("Hansen*.tif"))){
+  input <- paste0(gfcdir,file)
+  
+  system(sprintf("gdal_translate -co COMPRESS=LZW  -projwin %s %s %s %s %s %s",
+                 extent(mask0)@xmin,
+                 extent(mask0)@ymax,
+                 extent(mask0)@xmax,
+                 extent(mask0)@ymin,
+                 input,
+                 paste0(gfcdir,"crop_",file)
+  ))
+  
+  system(sprintf("gdalwarp -co COMPRESS=LZW  -t_srs \"%s\" %s %s",
+                 "+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0",
+                 paste0(gfcdir,"crop_",file),
+                 paste0(gfcdir,"utm_crop_",file)
+  ))
+}
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 13/ LU-LC - Land Use - Land Cover 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 14/ POPULATION DENSITY  
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 14.1/ FROM ENERGYDATA.INFO   
 # https://energydata.info/dataset/niger-republic-population-density-2015
 
 # DOWNLOAD THE FILE - UNZIP IT
@@ -1168,7 +1281,7 @@ writeRaster(denspop_utm_extent_res,"denspop_utm_extent_res.tif",format='GTiff',o
 
 # ?? Use gdal warp to transform the raster 1 to raster 2 to direclty use mask0 ??
 
-##################### 1.2/ FROM HUMDATA 
+##################### 14.2/ FROM HUMDATA 
 # https://data.humdata.org/organization/ocha-niger
 url            <- "ftp://ftp.worldpop.org.uk/GIS/Population/Global_2000_2020/2018/NER/ner_ppp_2018.tif"
 file           <- "ner_ppp_2018.tif"
@@ -1213,130 +1326,12 @@ writeRaster(denspop2_utm_extent_res,"denspop2_utm_extent_res.tif",format='GTiff'
 # ?? Use gdal warp to transform the raster 1 to raster 2 to direclty use mask0 ??
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 2/ SRTM
-# Spatial resolution approximately 30 meter on the line of the equator : http://srtm.csi.cgiar.org/srtmdata/ 
-# DOWNLOAD MANUALLY THE TILES FALLING ON YOUR AOI
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-# READ THE RASTER FILES 
-srtm           <- list.files(path=srtmdir, pattern="*.tif", full.names=T, recursive=FALSE)
-
-# VISUALIZE THEM --> More efficient way?
-# And how to see them next to each other ?
-srtm_test37_09 <- raster(paste0(srtmdir, "srtm_37_09.tif"))
-srtm_test37_10 <- raster(paste0(srtmdir, "srtm_37_10.tif"))
-srtm_test38_08 <- raster(paste0(srtmdir, "srtm_38_08.tif"))
-srtm_test38_09 <- raster(paste0(srtmdir, "srtm_38_09.tif"))
-srtm_test38_10 <- raster(paste0(srtmdir, "srtm_38_10.tif"))
-srtm_test39_08 <- raster(paste0(srtmdir, "srtm_39_08.tif"))
-srtm_test39_09 <- raster(paste0(srtmdir, "srtm_39_09.tif"))
-srtm_test39_10 <- raster(paste0(srtmdir, "srtm_39_10.tif"))
-srtm_test40_08 <- raster(paste0(srtmdir, "srtm_40_08.tif"))
-srtm_test40_09 <- raster(paste0(srtmdir, "srtm_40_09.tif"))
-
-plot(srtm_test37_09)
-plot(srtm_test37_10)
-plot(srtm_test38_08)
-plot(srtm_test38_09)
-plot(srtm_test38_10)
-plot(srtm_test39_08)
-plot(srtm_test39_09)
-plot(srtm_test39_10)
-plot(srtm_test40_08)
-plot(srtm_test40_09)
-
-# Put all the .tif in one vrt (virtual raster) 
-srtm_allfiles  <- list.files(path=srtmdir, pattern="*.tif", full.names=T, recursive=FALSE)
-output_vrt     <- paste0(data0dir, "srtm.vrt")
-output_tif     <- paste0(data0dir, "srtm.tif")
-
-gdalbuildvrt(gdalfile = srtm_allfiles, # uses all tiffs in the folder srtmdir
-             output.vrt = output_vrt,
-             separate=F,
-             verbose=TRUE
-)
-# Copy the virtual raster in an actual physical file
-# /!\ does not work
-gdal_translate(src_dataset = output_vrt, 
-               dst_dataset = output_tif, 
-               projwin=mask0,
-               options = c("BIGTIFF=YES", "COMPRESSION=LZW")
-)
-
-# APPLY THE CHANGES (resolution, extent, coordinate system) TO ALL AT THE SAME TIME
-# ----> to figure out
-
-# TRANSFORM THE COORDINATE SYSTEM -- USING EPSG0: +proj=utm
-# TEST FOR 1, how to do it for all the tiles at the same time ??
-EPSG0
-srtm_test37_09 <- raster(paste0(srtmdir, "srtm_37_09.tif"))
-srtm_test37_09_utm <- projectRaster(srtm_test37_09,crs = EPSG0) 
-srtm_test37_09_utm
-# saved in the setwd --- "~/safe_sepal/data_in/"
-writeRaster(srtm_test37_09_utm,"srtm_test37_09_utm.tif",format='GTiff',overwrite=TRUE)
-
-#OR CHECK : https://dwtkns.com/srtm30m/
-#OR CHECK : http://glcf.umd.edu/data/srtm/
-
-# get a slope layer
-
-slope_deg <- terrain(srtm_allfiles, opt='slope', unit='degrees')
-
-##################### ----> WORK TO BE CONTINUED<----- #####################
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 3/ PRECIPITATION
+##################### 15/ PRECIPITATIONS
 # ------> Find data : raster for the country
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #Getting the Data from: https://biogeo.ucdavis.edu/data/climate/worldclim/1_4/tiles/cur/prec_26.zip
 
 
-
-
 #####################   CHECK YOUR DATA0 FILE : YOU SHOULD HAVE ALL THE FILES IN .tif AND UTM
 ?ls
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +008 LU-LC 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +009 GFC 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-##################### CHECK WHICH GFC TILES FALL ON IT
-#Calculate the GFC product tiles needed for a given AOI
-#https://cran.r-project.org/web/packages/gfcanalysis/gfcanalysis.pdf
-tiles           <- calc_gfc_tiles(aoi_utm)
-
-plot(tiles)
-plot(aoi)
-
-##################### DOWNLOAD IF NECESSARY
-#https://cran.r-project.org/web/packages/gfcanalysis/gfcanalysis.pdf
-download_tiles(tiles,output_folder = gfcdir,images = c("treecover2000","lossyear","gain","datamask") )
-
-
-##################### REPROJECT IN THE CORRECT SYSTEM -> use mask0
-
-for(file in list.files(gfcdir,glob2rx("Hansen*.tif"))){
-  input <- paste0(gfcdir,file)
-  
-  system(sprintf("gdal_translate -co COMPRESS=LZW  -projwin %s %s %s %s %s %s",
-                 extent(mask0)@xmin,
-                 extent(mask0)@ymax,
-                 extent(mask0)@xmax,
-                 extent(mask0)@ymin,
-                 input,
-                 paste0(gfcdir,"crop_",file)
-  ))
-  
-  system(sprintf("gdalwarp -co COMPRESS=LZW  -t_srs \"%s\" %s %s",
-                 "+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0",
-                 paste0(gfcdir,"crop_",file),
-                 paste0(gfcdir,"utm_crop_",file)
-  ))
-}
-
-
