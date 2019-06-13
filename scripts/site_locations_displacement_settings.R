@@ -14,19 +14,20 @@ rm(list=ls())
 # +006 EXTRACT AND PREPARE LAYERS 
 # #    I/ SHAPEFILES 
 #      GET OSM DATA -> tmpdir
-# #    #            1/ CULTURE-RELIGION 
-# #    #            2/ EDUCATION 
-# #    #            3/ HEALTH  
-# #    #            4/ BIOMASS
-# #    #            5/ UNSUITABLE AREAS
-# #    #            6/ OPEN AREAS  
-# #    #            7/ ROADS 
-# #    #            8/ TOWNS 
-# #    #            9/ WATER POIS - drinking_water/fountain/water_tower/water_well/water_works
-# #    #            10/WATER OSM - reservoir/river/water
-# #    #            11/WATERWAYS OSM  - canal/drain/river/stream
-# #    #            12/WATER NATURAL OSM - spring
-# #    #            13/ELECTRIC LINES 
+# #    #            1/   RELIGION 
+# #    #            2-1/ WATER POIS - drinking_water/water_tower/water_well/water_works
+# #    #            2-2/ WATER OSM - reservoir/river/water
+# #    #            2-3/ WATERWAYS OSM  - canal/drain/river/stream
+# #    #            2-4/ WATER NATURAL OSM - spring
+# #    #            3/   ELECTRIC LINES 
+# #    #            4/   ROADS 
+# #    #            5/   BIOMASS
+# #    #            6/   TOWNS 
+# #    #            7/   HEALTH 
+# #    #            8/   EDUCATION 
+# #    #            9/   OPEN AREAS
+# #    #            10/  UNSUITABLE AREAS
+
 # #    II/ RASTERS 
 # #    #            1/ POPULATION DENSITY 
 # #    #            2/ SRTM 
@@ -238,7 +239,7 @@ system(sprintf("unzip -o %s -d %s",
                tmpdir))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 1/ CULTURE-RELIGION 
+##################### 1/ RELIGION 
 # MORE INFO page 11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Places of worship -> fclass -> "muslim_" and "christian_" (using the function grepl)
@@ -304,353 +305,266 @@ gdalinfo(paste0(data0dir, "religions.tif"),hist=T)
 gdalinfo(paste0(data0dir, "religions.tif"),mm=T)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 2/ EDUCATION  
-# MORE INFO page 6-7 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-## Points of interest -> fclass -> "university", "school", "kindergarten" and "college"
-edu         <- readOGR(paste0(tmpdir,"gis_osm_pois_free_1.shp"))
-str(edu)
-levels(as.factor(edu$fclass))
-
-#0 is NODATA
-edu$education_code                                         <-0
-#1 is university
-edu$education_code[which(grepl("university",edu$fclass))]  <-1
-#2 is school
-edu$education_code[which(grepl("school",edu$fclass))]      <-2
-#3 is kindergarten 
-edu$education_code[which(grepl("kindergarten",edu$fclass))]<-3
-#4 is college
-edu$education_code[which(grepl("college",edu$fclass))]     <-4
-edu
-head(edu)
-plot(edu)
-
-#Use a filter function to only take into account the points related to education facilities
-edu_only    <- edu[edu$education_code !=0,]
-str(edu_only@data)
-levels(as.factor(edu_only$education_code))
-
-## REPROJECT
-edu_only_utm <-spTransform(edu_only, crs(mask0))
-
-# /!\focusing on Niger
-edu_only_utm_extent <- crop(edu_only_utm,(aoi_utm))
-# Error in x@coords[i, , drop = FALSE] : subscript out of bounds
-
-# Compare the extent of the 
-edu_only_utm
-aoi_utm
-# xmin and ymin have to be cropped
-# xmax and ymax have to be extended
-# how should I proceed?
-
-writeOGR(edu_only_mask0, paste0(data0dir, "educationcode.shp"), layer="educationcode.shp", driver='ESRI Shapefile', overwrite=T)
-
-## Get R to read the shapefile that we have created 
-edu_shp        <- readOGR(paste0(data0dir,"educationcode.shp"))
-head(edu_shp)
-str(edu_shp@data)
-plot(edu_shp)
-
-## RASTERIZE 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"educationcode.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir,"education_comp.tif"),
-               "edctn_c"
-))
-plot(raster(paste0(data0dir, "education_comp.tif")))
-gdalinfo(paste0(data0dir,"education_comp.tif"),mm=T)
-
+##################### 2-1/ WATER POIS 
+# MORE INFO page 10-11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 3/ HEALTH  
-# MORE INFO page 6-7 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-## Points of interest -> fclass -> "pharmacy", "hospital", "doctors" and "dentist"
-health      <- readOGR(paste0(tmpdir,"gis_osm_pois_free_1.shp"))
-str(health)
-levels(as.factor(health$fclass))
+## Points of interest -> fclass -> "drinking water", "fountain", "water_tower", "water_well" and "water_works"
+water_pois     <- readOGR(paste0(tmpdir,"gis_osm_pois_free_1.shp"))
+levels(as.factor(water_pois$fclass))
 
 #0 is NODATA
-health$health_code                                         <-0
-#1 is pharmacy
-health$health_code[which(grepl("pharmacy",health$fclass))] <-1
-#2 is hospital
-health$health_code[which(grepl("hospital",health$fclass))] <-2
-#3 is doctors
-health$health_code[which(grepl("doctors",health$fclass))]  <-3
-#4 is dentist
-health$health_code[which(grepl("dentist",health$fclass))]  <-4
+water_pois$water_code                                                 <-0
+#1 is drinkig water
+water_pois$water_code[which(grepl("drinkig water",water_pois$fclass))]<-1
+#2 is water_tower
+water_pois$water_code[which(grepl("water_tower",water_pois$fclass))]  <-2
+#3 is water_well
+water_pois$water_code[which(grepl("water_well",water_pois$fclass))]   <-3
+#4 is water_works
+water_pois$water_code[which(grepl("water_works",water_pois$fclass))]  <-4
+water_pois
+head(water_pois)
 
-health
-head(health)
-#Use a filter function to only take into account the points related to health facilities
-health_only    <- health[health$health_code !=0,]
-str(health_only@data)
-levels(as.factor(health_only$health_code))
-
-## REPROJECT
-health_only_utm<-spTransform(health_only, crs(mask0))
-writeOGR(health_only_utm, paste0(data0dir,"healthcode.shp"), layer= "healthcode.shp",driver='ESRI Shapefile', overwrite=T)
-
-# /!\focusing on Niger
-health_only_utm_extent <- crop(health_only_utm,(aoi_utm))
-# Error in x@coords[i, , drop = FALSE] : subscript out of bounds
-
-## Get R to read the shapefile that we have created to use it afterwards if needed
-health_shp     <- readOGR(paste0(data0dir,"healthcode.shp"))
-head(health_shp)
-plot(health_shp)
-
-## RASTERIZE 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"healthcode.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "health.tif"),
-               "hlth_cd"
-))
-plot(raster(paste0(data0dir, "health.tif")))
-gdalinfo(paste0(data0dir,"health.tif"),mm=T)
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 4/ BIOMASS  
-# "forest", "scrub" and "tree"
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-##################### 4.1./ 
-# MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-## fclass -> "forest" and "scrub"
-biomass     <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
-str(biomass)
-levels(as.factor(biomass$fclass))
-
-#0 is NODATA
-biomass$biom_code                                          <-0
-#1 is forest
-biomass$biom_code[which(grepl("forest",biomass$fclass))]   <-1
-#2 is scrub
-biomass$biom_code[which(grepl("scrub",biomass$fclass))]    <-2
-biomass
-head(biomass)
-
-#Use a filter function to only take into account the points related to health facilities
-biomass_only     <- biomass[biomass$biom_code !=0,]
-str(biomass_only@data)
-levels(as.factor(biomass_only$biom_code))
+water_pois_only <- water_pois[water_pois$water_code !=0,]
+str(water_pois_only@data)
+levels(as.factor(water_pois_only$fclass))
 
 ## REPROJECT
-biomass_only_utm <- spTransform(biomass_only, crs(mask0))
-
-# /!\focusing on Niger
-biomass_only_utm_extent <- crop(biomass_only_utm,(aoi_utm))
-#Cropping worked
-
-writeOGR(biomass_only_utm_extent, paste0(data0dir,"biomcode.shp"), layer= "biomcode.shp",driver='ESRI Shapefile', overwrite=T)
-
-## Get R to read the shapefile that we have created to use it afterwards if needed
-biomass_shp      <- readOGR(paste0(data0dir,"biomcode.shp"))
-head(biomass_shp)
-plot(biomass_shp)
-
-## RASTERIZE 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"biomcode.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "biomass.tif"),
-               "biom_code"
-))
-plot(raster(paste0(data0dir, "biomass.tif")))
-gdalinfo(paste0(data0dir,"biomass.tif",mm=T))
-
-
-##################### 4.2./ 
-# MORE INFO page 11-12 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-## fclass -> "tree"
-tree_natural     <- readOGR(paste0(tmpdir,"gis_osm_natural_free_1.shp"))
-levels(as.factor(tree_natural$fclass))
-
-#0 is NODATA
-tree_natural$natural_code                                          <-0
-#1 is tree
-tree_natural$natural_code[which(grepl("tree",tree_natural$fclass))]<-1
-tree_natural
-head(tree_natural)
-
-#Use a filter function to only take into account the points related to trees
-tree_natural_only<- tree_natural[tree_natural$natural_code !=0,]
-str(tree_natural_only@data)
-levels(as.factor(tree_natural_only$natural_code))
-
-## REPROJECT
-tree_natural_only_utm<-spTransform(tree_natural_only, crs(mask0))
-
-# /!\focusing on Niger
-tree_natural_only_utm_extent <- crop(tree_natural_only_utm,(aoi_utm))
+water_pois_only_utm<-spTransform(water_pois_only, crs(mask0))
+plot(water_pois_only_utm)
+plot(aoi_utm,add=T)
+#/!\focusing on Niger 
+water_pois_only_utm_extent <- crop(water_pois_only_utm,(aoi_utm))
 #Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
-writeOGR(tree_natural_only_utm, paste0(data0dir,"tree_naturalcode.shp"), layer = "tree_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
+writeOGR(water_pois_only_utm, paste0(data0dir, "water_pois_code.shp"), layer= "water_pois_code.shp", driver='ESRI Shapefile', overwrite=T)
 
-tree_natural_shp     <- readOGR(paste0(data0dir,"tree_naturalcode.shp"))
-plot(tree_natural_shp)
-head(tree_natural_shp)
-## RASTERIZE 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"tree_naturalcode.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "tree_naturalcode.tif"),
-               "ntrl_cd"
-))
-plot(raster(paste0(data0dir, "tree_naturalcode.tif")))
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 5/ UNSUITABLE AREAS 
-# "nature_reserve", "military", "national_park" and "wetlands"
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-##################### 5.1./ 
-# MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-## fclass -> "nature_reserve", "military" and "national_park"
-unsuitable       <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
-str(unsuitable)
-levels(as.factor(unsuitable$fclass))
-
-#0 is NODATA
-unsuitable$unsuit_code                                                  <-0
-#1 is nature_reserve
-unsuitable$unsuit_code[which(grepl("nature_reserve",unsuitable$fclass))]<-1
-#2 is military
-unsuitable$unsuit_code[which(grepl("military",unsuitable$fclass))]      <-2
-#3 is national_park
-unsuitable$unsuit_code[which(grepl("national_park",unsuitable$fclass))] <-3
-unsuitable
-head(unsuitable)
-
-#Use a filter function to only take into account the points related to health facilities
-unsuitable_only  <- unsuitable[unsuitable$unsuit_code !=0,]
-str(unsuitable_only@data)
-levels(as.factor(unsuitable_only$unsuit_code))
-#there is no national park recorded in Niger with this dataset
-
-## REPROJECT
-unsuitable_only_utm        <- spTransform(unsuitable_only, crs(mask0))
-#/!\focusing on Niger
-unsuitable_only_utm_extent <- crop(unsuitable_only_utm,(aoi_utm))
-#Cropping worked
-
-plot(unsuitable_only_utm)
-plot(unsuitable_only_utm_extent)
-plot(aoi_utm, add=TRUE)
-
-str(unsuitable_only_utm_extent)
-writeOGR(unsuitable_only_utm_extent, paste0(data0dir,"unsuitcode.shp"), layer= "unsuitcode.shp",driver='ESRI Shapefile', overwrite=T)
-
-unsuit_shp           <- readOGR(paste0(data0dir,"unsuitcode.shp"))
-plot(unsuit_shp)
+water_pois_shp  <- readOGR(paste0(data0dir,"water_pois_code.shp"))
+plot(water_pois_shp)
+head(water_pois_shp)
 
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"unsuitcode.shp"),
+               paste0(data0dir,"water_pois_code.shp"),
                paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "unsuit.tif"),
-               "unst_cd"
-))
-plot(raster(paste0(data0dir, "unsuit.tif")))
-gdalinfo(paste0(data0dir,"unsuit.tif",mm=T))
-
-##################### 5.2./ 
-# MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-## fclass -> "wetland" 
-wetland_osm      <- readOGR(paste0(tmpdir,"gis_osm_water_a_free_1.shp"))
-levels(as.factor(wetland_osm$fclass))
-
-#0 is NODATA
-wetland_osm$water_code                                                  <-0
-#1 is wetland
-wetland_osm$water_code[which(grepl("wetland",wetland_osm$fclass))]      <-1
-
-head(wetland_osm)
-
-#Use a filter function to only take into account the points related to water 
-wetland_osm_only     <- wetland_osm[wetland_osm$water_code !=0,]
-levels(as.factor(wetland_osm_only$fclass))
-
-## REPROJECT
-wetland_osm_only_utm        <-spTransform(wetland_osm_only, crs(mask0))
-#/!\focusing on Niger
-wetland_osm_only_utm_extent <- crop(wetland_osm_only_utm,(aoi_utm))
-wetland_osm_only_utm_extent
-plot(wetland_osm_only_utm)
-plot(wetland_osm_only_utm_extent)
-plot(aoi_utm, add=T)
-#Cropping worked
-writeOGR(wetland_osm_only_utm_extent, paste0(data0dir, "wetland_osmcode.shp"),layer="wetland_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
-
-wetland_osm_shp             <- readOGR(paste0(data0dir,"wetland_osmcode.shp"))
-head(wetland_osm_shp)
-plot(wetland_osm_shp)
-## RASTERIZE 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"wetland_osmcode.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "wetland_osmcode.tif"),
+               paste0(data0dir, "water_pois_code.tif"),
                "water_code"
 ))
-plot(raster(paste0(data0dir, "wetland_osmcode.tif")))
-gdalinfo(paste0(data0dir,"wetland_osmcode.tif",mm=T))
+plot(raster(paste0(data0dir, "water_pois_code.tif")))
+gdalinfo(paste0(data0dir,"water_pois_code.tif",mm=T))
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 6/ OPEN SITES  
+##################### 2-2/ WATER OSM  
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-## fclass -> "meadow", "grass" and "heath"
-openareas  <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
-str(openareas)
-levels(as.factor(openareas$fclass))
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## fclass -> "reservoir", "river", "water" 
+water_osm      <- readOGR(paste0(tmpdir,"gis_osm_water_a_free_1.shp"))
+levels(as.factor(water_osm$fclass))
 
 #0 is NODATA
-openareas$open_code                                         <-0
-#1 is meadow
-openareas$open_code[which(grepl("meadow",openareas$fclass))]<-1
-#2 is grass
-openareas$open_code[which(grepl("grass",openareas$fclass))] <-2
-#3 is heath
-openareas$open_code[which(grepl("heath",openareas$fclass))] <-3
-openareas
-head(openareas)
+water_osm$water_code                                            <-0
+#1 is water
+water_osm$water_code[which(grepl("water",water_osm$fclass))]    <-1
+#1 is reservoir
+water_osm$water_code[which(grepl("reservoir",water_osm$fclass))]<-2
+#2 is river
+water_osm$water_code[which(grepl("river",water_osm$fclass))]    <-3
 
-#Use a filter function to only take into account the points related to health facilities
-openareas_only     <- openareas[openareas$open_code !=0,]
-str(openareas_only@data)
-levels(as.factor(openareas_only$fclass))
+
+head(water_osm)
+
+#Use a filter function to only take into account the points related to water 
+water_osm_only <- water_osm[water_osm$water_code !=0,]
+str(water_osm_only@data)
+levels(as.factor(water_osm_only$fclass))
 
 ## REPROJECT
-openareas_only_utm <- spTransform(openareas_only, crs(mask0))
-#/!\focusing on Niger
-openareas_only_utm_extent <- crop(openareas_only_utm,(aoi_utm))
-#Cropping worked
-writeOGR(openareas_only_utm_extent, paste0(data0dir,"openareascode.shp"), layer= "openareascode.shp",driver='ESRI Shapefile', overwrite=T)
+water_osm_only_utm        <-spTransform(water_osm_only, crs(mask0))
 
-openareas_shp      <- readOGR(paste0(data0dir,"openareascode.shp"))
-head(openareas_shp)
-plot(openareas_shp)
+#/!\focusing on Niger 
+water_osm_only_utm_extent <- crop(water_osm_only_utm,(aoi_utm))
+plot(water_osm_only_utm)
+plot(water_osm_only_utm_extent)
+plot(aoi_utm,add=T)
+
+writeOGR(water_osm_only_utm_extent, paste0(data0dir, "water_osmcode.shp"),layer="water_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
+
+water_osm_shp             <- readOGR(paste0(data0dir,"water_osmcode.shp"))
+head(water_osm_shp)
 
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"openareascode.shp"),
+               paste0(data0dir,"water_osmcode.shp"),
                paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "openareascode.tif"),
-               "open_code"
+               paste0(data0dir, "water_osmcode.tif"),
+               "water_code"
 ))
-plot(raster(paste0(data0dir, "openareascode.tif")))
-gdalinfo(paste0(data0dir,"openareascode.tif",mm=T))
+plot(raster(paste0(data0dir, "water_osmcode.tif")))
+gdalinfo(paste0(data0dir,"water_osmcode.tif",mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 7/ ROADS  
+##################### 2-3/ WATERWAYS OSM  
+# MORE INFO page 16 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## fclass -> "canal", "drain", "river" and "stream"
+waterways_osm  <- readOGR(paste0(tmpdir,"gis_osm_waterways_free_1.shp"))
+levels(as.factor(waterways_osm$fclass))
+
+#0 is NODATA
+waterways_osm$waterways_code                                             <-0
+#1 is river
+waterways_osm$waterways_code[which(grepl("river",waterways_osm$fclass))] <-1
+#2 is stream
+waterways_osm$waterways_code[which(grepl("stream",waterways_osm$fclass))]<-2
+#3 is canal
+waterways_osm$waterways_code[which(grepl("canal",waterways_osm$fclass))] <-3
+#4 is drain
+waterways_osm$waterways_code[which(grepl("drain",waterways_osm$fclass))] <-4
+
+
+waterways_osm
+head(waterways_osm)
+
+#Use a filter function to only take into account the points related to water 
+waterways_osm_only <- waterways_osm[waterways_osm$waterways_code !=0,]
+str(waterways_osm_only@data)
+levels(as.factor(waterways_osm_only$fclass))
+
+## REPROJECT
+waterways_osm_only_utm<-spTransform(waterways_osm_only, crs(mask0))
+
+#/!\focusing on Niger 
+waterways_osm_only_utm_extent <- crop(waterways_osm_only_utm,(aoi_utm))
+#Cropping worked
+plot(waterways_osm_only_utm_extent)
+plot(aoi_utm,add=T)
+
+writeOGR(waterways_osm_only_utm_extent, paste0(data0dir, "waterways_osm_code.shp"), layer="waterways_osm_code.shp", driver='ESRI Shapefile', overwrite=T)
+
+waterways_osm_shp    <- readOGR(paste0(data0dir, "waterways_osm_code.shp"))
+head(waterways_osm_shp)
+
+## RASTERIZE 
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir,"waterways_osm_code.shp"),
+               paste0(griddir,"mask0_comp.tif"),
+               paste0(data0dir, "waterways_osm_code.tif"),
+               "wtrwys_"
+))
+plot(raster(paste0(data0dir, "waterways_osm_code.tif")))
+gdalinfo(paste0(data0dir,"waterways_osm_code.tif",mm=T))
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 2-4/ WATER NATURAL OSM  
+# MORE INFO page 11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## fclass -> "spring"
+water_natural  <- readOGR(paste0(tmpdir,"gis_osm_natural_free_1.shp"))
+levels(as.factor(water_natural$fclass))
+
+#0 is NODATA
+water_natural$water_code                                             <-0
+#1 is spring
+water_natural$water_code[which(grepl("spring",water_natural$fclass))]<-1
+water_natural
+head(water_natural)
+
+#Use a filter function to only take into account the points related to water 
+water_natural_only           <- water_natural[water_natural$water_code !=0,]
+str(water_natural_only@data)
+levels(as.factor(water_natural_only$water_code))
+
+## REPROJECT
+water_natural_only_utm<-spTransform(water_natural_only, crs(mask0))
+
+#/!\focusing on Niger 
+water_natural_only_utm_extent <- crop(water_natural_only_utm,(aoi_utm))
+#Error in x@coords[i, , drop = FALSE] : subscript out of bounds
+
+writeOGR(water_natural_only_utm, paste0(data0dir,"water_naturalcode.shp"), layer = "water_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
+
+water_natural_shp             <- readOGR(paste0(data0dir,"water_naturalcode.shp"))
+plot(water_natural_shp)
+
+## RASTERIZE 
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir,"water_naturalcode.shp"),
+               paste0(griddir,"mask0_comp.tif"),
+               paste0(data0dir, "water_naturalcode.tif"),
+               "water_code"
+))
+plot(raster(paste0(data0dir, "water_naturalcode.tif")))
+gdalinfo(paste0(data0dir,"water_naturalcode.tif",mm=T))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 3/ELECTRIC LINES 
+# Electricity Transmission Network
+# https://energydata.info/dataset/niger-electricity-transmission-network-2015
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#See details on : http://africagrid.energydata.info/#
+url            <- "https://development-data-hub-s3-public.s3.amazonaws.com/ddhfiles/145469/330132663320kvlinesniger.zip"
+file           <- "330132663320kvlinesniger.zip"
+
+download.file(url = url,
+              destfile = paste0(elecdir,file))
+
+system(sprintf("unzip -o %s -d %s",
+               paste0(elecdir,file),
+               elecdir))
+
+electricity    <- readOGR(paste0(elecdir,"330_132_66_33_20_kV_lines_NIGER.shp"))
+head(electricity)
+levels(as.factor(electricity$voltage_kV))
+levels(as.factor(electricity$status))
+levels(as.factor(electricity$source))
+levels(as.factor(electricity$year))
+
+#0 is "Planned"
+electricity$status_code                                             <-0
+#1 is "Existing"
+electricity$status_code[which(grepl("Existing",electricity$status))]<-1
+electricity
+head(electricity)
+
+#Use a filter function to only take into account the points related to the electricity transmission network that exists already
+electricity_existing_only    <- electricity[electricity$status_code !=0,]
+str(electricity_existing_only@data)
+levels(as.factor(electricity_existing_only$status_code))
+
+plot(electricity_existing_only)
+plot(aoi, add=T)
+
+## REPROJECT
+electricity_existing_only_utm<-spTransform(electricity_existing_only, crs(mask0))
+electricity_existing_only_utm
+#/!\focusing on Niger ---->>>> DOES THE NEXT LINE (CROPPING) ACTUALLY DO SOMETHING? 
+electricity_existing_only_utm_extent <- crop(electricity_existing_only_utm,(aoi_utm))
+electricity_existing_only_utm_extent
+electricity_existing_only_utm
+plot(electricity_existing_only_utm_extent)
+plot(aoi_utm,add=T) 
+writeOGR(electricity_existing_only_utm_extent, paste0(data0dir, "electricity_code.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
+
+electricity_code            <- readOGR(paste0(data0dir,"electricity_code.shp"))
+head(electricity_code)
+electricity_code
+
+## RASTERIZE 
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir,"electricity_code.shp"),
+               paste0(griddir,"mask0_comp.tif"),
+               paste0(data0dir, "electricity_code.tif"),
+               "stts_cd "
+))
+plot(raster(paste0(data0dir, "electricity_code.tif")))
+gdalinfo(paste0(data0dir,"electricity_code.tif",mm=T))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 4/ ROADS  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 ##################### FROM HUMDATA 
 # MORE INFO : https://data.humdata.org/dataset/niger-roads
@@ -760,7 +674,98 @@ plot(raster(paste0(data0dir, "roadscode.tif")))
 gdalinfo(paste0(data0dir,"roadscode.tif",mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 8/ TOWNS  -> /!\ HEAVY WHEN USING OSM DATA /!\-> NEED TO COMPRESS THE SHAPEFILE?
+##################### 5/ BIOMASS  
+# "forest", "scrub" and "tree"
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+##################### 5.1./ 
+# MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+## fclass -> "forest" and "scrub"
+biomass     <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
+str(biomass)
+levels(as.factor(biomass$fclass))
+
+#0 is NODATA
+biomass$biom_code                                          <-0
+#1 is forest
+biomass$biom_code[which(grepl("forest",biomass$fclass))]   <-1
+#2 is scrub
+biomass$biom_code[which(grepl("scrub",biomass$fclass))]    <-2
+biomass
+head(biomass)
+
+#Use a filter function to only take into account the points related to health facilities
+biomass_only     <- biomass[biomass$biom_code !=0,]
+str(biomass_only@data)
+levels(as.factor(biomass_only$biom_code))
+
+## REPROJECT
+biomass_only_utm <- spTransform(biomass_only, crs(mask0))
+
+# /!\focusing on Niger
+biomass_only_utm_extent <- crop(biomass_only_utm,(aoi_utm))
+#Cropping worked
+
+writeOGR(biomass_only_utm_extent, paste0(data0dir,"biomcode.shp"), layer= "biomcode.shp",driver='ESRI Shapefile', overwrite=T)
+
+## Get R to read the shapefile that we have created to use it afterwards if needed
+biomass_shp      <- readOGR(paste0(data0dir,"biomcode.shp"))
+head(biomass_shp)
+plot(biomass_shp)
+
+## RASTERIZE 
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir,"biomcode.shp"),
+               paste0(griddir,"mask0_comp.tif"),
+               paste0(data0dir, "biomass.tif"),
+               "biom_code"
+))
+plot(raster(paste0(data0dir, "biomass.tif")))
+gdalinfo(paste0(data0dir,"biomass.tif",mm=T))
+
+
+##################### 5.2./ 
+# MORE INFO page 11-12 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+## fclass -> "tree"
+tree_natural     <- readOGR(paste0(tmpdir,"gis_osm_natural_free_1.shp"))
+levels(as.factor(tree_natural$fclass))
+
+#0 is NODATA
+tree_natural$natural_code                                          <-0
+#1 is tree
+tree_natural$natural_code[which(grepl("tree",tree_natural$fclass))]<-1
+tree_natural
+head(tree_natural)
+
+#Use a filter function to only take into account the points related to trees
+tree_natural_only<- tree_natural[tree_natural$natural_code !=0,]
+str(tree_natural_only@data)
+levels(as.factor(tree_natural_only$natural_code))
+
+## REPROJECT
+tree_natural_only_utm<-spTransform(tree_natural_only, crs(mask0))
+
+# /!\focusing on Niger
+tree_natural_only_utm_extent <- crop(tree_natural_only_utm,(aoi_utm))
+#Error in x@coords[i, , drop = FALSE] : subscript out of bounds
+
+writeOGR(tree_natural_only_utm, paste0(data0dir,"tree_naturalcode.shp"), layer = "tree_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
+
+tree_natural_shp     <- readOGR(paste0(data0dir,"tree_naturalcode.shp"))
+plot(tree_natural_shp)
+head(tree_natural_shp)
+## RASTERIZE 
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir,"tree_naturalcode.shp"),
+               paste0(griddir,"mask0_comp.tif"),
+               paste0(data0dir, "tree_naturalcode.tif"),
+               "ntrl_cd"
+))
+plot(raster(paste0(data0dir, "tree_naturalcode.tif")))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 6/ TOWNS  -> /!\ HEAVY WHEN USING OSM DATA /!\-> NEED TO COMPRESS THE SHAPEFILE?
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 ##################### FROM HUMDATA 
 # MORE INFO : https://data.humdata.org/dataset/niger-settlements
@@ -822,14 +827,16 @@ buildings
 head(buildings)
 
 ## REPROJECT -- MAY TAKE TIME
-buildings            <-spTransform(buildings, crs(mask0))
-buildings
+buildings_utm            <-spTransform(buildings, crs(mask0))
+buildings_utm
 
 #/!\focusing on Niger
-buildings_utm_extent <- crop(buildings,aoi_utm)
+buildings_utm_extent <- crop(buildings_utm,aoi_utm)
 plot(buildings_utm_extent)
-#Cropping? 
-writeOGR(buildings, paste0(data0dir,"buildingscode.shp"), layer= "buildingscode.shp",driver='ESRI Shapefile', overwrite=T)
+plot(aoi_utm, add=T)
+#Cropping worked
+# WRITE SHAPEFILE -- MAY TAKE TIME
+writeOGR(buildings_utm_extent, paste0(data0dir,"buildingscode.shp"), layer= "buildingscode.shp",driver='ESRI Shapefile', overwrite=T)
 
 buildings_shp        <- readOGR(paste0(data0dir, "buildingscode.shp"))
 plot(buildings_shp)
@@ -847,263 +854,262 @@ plot(raster(paste0(data0dir, "buildingscode.tif")))
 gdalinfo(paste0(data0dir,"buildingscode.tif",mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 9/ WATER POIS 
-# MORE INFO page 10-11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Points of interest -> fclass -> "drinking water", "fountain", "water_tower", "water_well" and "water_works"
-water_pois     <- readOGR(paste0(tmpdir,"gis_osm_pois_free_1.shp"))
-levels(as.factor(water_pois$fclass))
+##################### 7/ HEALTH  
+# MORE INFO page 6-7 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+## Points of interest -> fclass -> "pharmacy", "hospital", "doctors" and "dentist"
+health      <- readOGR(paste0(tmpdir,"gis_osm_pois_free_1.shp"))
+str(health)
+levels(as.factor(health$fclass))
 
 #0 is NODATA
-water_pois$water_code                                                 <-0
-#1 is drinkig water
-water_pois$water_code[which(grepl("drinkig water",water_pois$fclass))]<-1
-#2 is water_tower
-water_pois$water_code[which(grepl("water_tower",water_pois$fclass))]  <-2
-#3 is water_well
-water_pois$water_code[which(grepl("water_well",water_pois$fclass))]   <-3
-#4 is water_works
-water_pois$water_code[which(grepl("water_works",water_pois$fclass))]  <-4
-water_pois
-head(water_pois)
+health$health_code                                         <-0
+#1 is pharmacy
+health$health_code[which(grepl("pharmacy",health$fclass))] <-1
+#2 is hospital
+health$health_code[which(grepl("hospital",health$fclass))] <-2
+#3 is doctors
+health$health_code[which(grepl("doctors",health$fclass))]  <-3
+#4 is dentist
+health$health_code[which(grepl("dentist",health$fclass))]  <-4
 
-water_pois_only <- water_pois[water_pois$water_code !=0,]
-str(water_pois_only@data)
-levels(as.factor(water_pois_only$fclass))
+health
+head(health)
+#Use a filter function to only take into account the points related to health facilities
+health_only    <- health[health$health_code !=0,]
+str(health_only@data)
+levels(as.factor(health_only$health_code))
 
 ## REPROJECT
-water_pois_only_utm<-spTransform(water_pois_only, crs(mask0))
-plot(water_pois_only_utm)
-plot(aoi_utm,add=T)
-#/!\focusing on Niger 
-water_pois_only_utm_extent <- crop(water_pois_only_utm,(aoi_utm))
-#Error in x@coords[i, , drop = FALSE] : subscript out of bounds
+health_only_utm<-spTransform(health_only, crs(mask0))
+writeOGR(health_only_utm, paste0(data0dir,"healthcode.shp"), layer= "healthcode.shp",driver='ESRI Shapefile', overwrite=T)
 
-writeOGR(water_pois_only_utm, paste0(data0dir, "water_pois_code.shp"), layer= "water_pois_code.shp", driver='ESRI Shapefile', overwrite=T)
+# /!\focusing on Niger
+health_only_utm_extent <- crop(health_only_utm,(aoi_utm))
+# Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
-water_pois_shp  <- readOGR(paste0(data0dir,"water_pois_code.shp"))
-plot(water_pois_shp)
-head(water_pois_shp)
+## Get R to read the shapefile that we have created to use it afterwards if needed
+health_shp     <- readOGR(paste0(data0dir,"healthcode.shp"))
+head(health_shp)
+plot(health_shp)
 
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"water_pois_code.shp"),
+               paste0(data0dir,"healthcode.shp"),
                paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "water_pois_code.tif"),
-               "water_code"
+               paste0(data0dir, "health.tif"),
+               "hlth_cd"
 ))
-plot(raster(paste0(data0dir, "water_pois_code.tif")))
-gdalinfo(paste0(data0dir,"water_pois_code.tif",mm=T))
+plot(raster(paste0(data0dir, "health.tif")))
+gdalinfo(paste0(data0dir,"health.tif"),mm=T)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 10/ WATER OSM  
+##################### 8/ EDUCATION  
+# MORE INFO page 6-7 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+## Points of interest -> fclass -> "university", "school", "kindergarten" and "college"
+edu         <- readOGR(paste0(tmpdir,"gis_osm_pois_free_1.shp"))
+str(edu)
+levels(as.factor(edu$fclass))
+
+#0 is NODATA
+edu$education_code                                         <-0
+#1 is university
+edu$education_code[which(grepl("university",edu$fclass))]  <-1
+#2 is school
+edu$education_code[which(grepl("school",edu$fclass))]      <-2
+#3 is kindergarten 
+edu$education_code[which(grepl("kindergarten",edu$fclass))]<-3
+#4 is college
+edu$education_code[which(grepl("college",edu$fclass))]     <-4
+edu
+head(edu)
+plot(edu)
+
+#Use a filter function to only take into account the points related to education facilities
+edu_only    <- edu[edu$education_code !=0,]
+str(edu_only@data)
+levels(as.factor(edu_only$education_code))
+
+## REPROJECT
+edu_only_utm <-spTransform(edu_only, crs(mask0))
+
+# /!\focusing on Niger
+edu_only_utm_extent <- crop(edu_only_utm,(aoi_utm))
+# Error in x@coords[i, , drop = FALSE] : subscript out of bounds
+
+# Compare the extent of the 
+edu_only_utm
+aoi_utm
+# xmin and ymin have to be cropped
+# xmax and ymax have to be extended
+# how should I proceed?
+
+writeOGR(edu_only_mask0, paste0(data0dir, "educationcode.shp"), layer="educationcode.shp", driver='ESRI Shapefile', overwrite=T)
+
+## Get R to read the shapefile that we have created 
+edu_shp        <- readOGR(paste0(data0dir,"educationcode.shp"))
+head(edu_shp)
+str(edu_shp@data)
+plot(edu_shp)
+
+## RASTERIZE 
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir,"educationcode.shp"),
+               paste0(griddir,"mask0_comp.tif"),
+               paste0(data0dir,"education_comp.tif"),
+               "edctn_c"
+))
+plot(raster(paste0(data0dir, "education_comp.tif")))
+gdalinfo(paste0(data0dir,"education_comp.tif"),mm=T)
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 9/ OPEN SITES  
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## fclass -> "reservoir", "river", "water" 
-water_osm      <- readOGR(paste0(tmpdir,"gis_osm_water_a_free_1.shp"))
-levels(as.factor(water_osm$fclass))
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+## fclass -> "meadow", "grass" and "heath"
+openareas  <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
+str(openareas)
+levels(as.factor(openareas$fclass))
 
 #0 is NODATA
-water_osm$water_code                                            <-0
-#1 is water
-water_osm$water_code[which(grepl("water",water_osm$fclass))]    <-1
-#1 is reservoir
-water_osm$water_code[which(grepl("reservoir",water_osm$fclass))]<-2
-#2 is river
-water_osm$water_code[which(grepl("river",water_osm$fclass))]    <-3
+openareas$open_code                                         <-0
+#1 is meadow
+openareas$open_code[which(grepl("meadow",openareas$fclass))]<-1
+#2 is grass
+openareas$open_code[which(grepl("grass",openareas$fclass))] <-2
+#3 is heath
+openareas$open_code[which(grepl("heath",openareas$fclass))] <-3
+openareas
+head(openareas)
 
-
-head(water_osm)
-
-#Use a filter function to only take into account the points related to water 
-water_osm_only <- water_osm[water_osm$water_code !=0,]
-str(water_osm_only@data)
-levels(as.factor(water_osm_only$fclass))
-
-## REPROJECT
-water_osm_only_utm        <-spTransform(water_osm_only, crs(mask0))
-
-#/!\focusing on Niger 
-water_osm_only_utm_extent <- crop(water_osm_only_utm,(aoi_utm))
-plot(water_osm_only_utm)
-plot(water_osm_only_utm_extent)
-plot(aoi_utm,add=T)
-
-writeOGR(water_osm_only_utm_extent, paste0(data0dir, "water_osmcode.shp"),layer="water_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
-
-water_osm_shp             <- readOGR(paste0(data0dir,"water_osmcode.shp"))
-head(water_osm_shp)
-
-## RASTERIZE 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"water_osmcode.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "water_osmcode.tif"),
-               "water_code"
-))
-plot(raster(paste0(data0dir, "water_osmcode.tif")))
-gdalinfo(paste0(data0dir,"water_osmcode.tif",mm=T))
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 11/ WATERWAYS OSM  
-# MORE INFO page 16 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## fclass -> "canal", "drain", "river" and "stream"
-waterways_osm  <- readOGR(paste0(tmpdir,"gis_osm_waterways_free_1.shp"))
-levels(as.factor(waterways_osm$fclass))
-
-#0 is NODATA
-waterways_osm$waterways_code                                             <-0
-#1 is river
-waterways_osm$waterways_code[which(grepl("river",waterways_osm$fclass))] <-1
-#2 is stream
-waterways_osm$waterways_code[which(grepl("stream",waterways_osm$fclass))]<-2
-#3 is canal
-waterways_osm$waterways_code[which(grepl("canal",waterways_osm$fclass))] <-3
-#4 is drain
-waterways_osm$waterways_code[which(grepl("drain",waterways_osm$fclass))] <-4
-
-
-waterways_osm
-head(waterways_osm)
-
-#Use a filter function to only take into account the points related to water 
-waterways_osm_only <- waterways_osm[waterways_osm$waterways_code !=0,]
-str(waterways_osm_only@data)
-levels(as.factor(waterways_osm_only$fclass))
+#Use a filter function to only take into account the points related to health facilities
+openareas_only     <- openareas[openareas$open_code !=0,]
+str(openareas_only@data)
+levels(as.factor(openareas_only$fclass))
 
 ## REPROJECT
-waterways_osm_only_utm<-spTransform(waterways_osm_only, crs(mask0))
-
-#/!\focusing on Niger 
-waterways_osm_only_utm_extent <- crop(waterways_osm_only_utm,(aoi_utm))
+openareas_only_utm <- spTransform(openareas_only, crs(mask0))
+#/!\focusing on Niger
+openareas_only_utm_extent <- crop(openareas_only_utm,(aoi_utm))
 #Cropping worked
-plot(waterways_osm_only_utm_extent)
-plot(aoi_utm,add=T)
+writeOGR(openareas_only_utm_extent, paste0(data0dir,"openareascode.shp"), layer= "openareascode.shp",driver='ESRI Shapefile', overwrite=T)
 
-writeOGR(waterways_osm_only_utm_extent, paste0(data0dir, "waterways_osm_code.shp"), layer="waterways_osm_code.shp", driver='ESRI Shapefile', overwrite=T)
-
-waterways_osm_shp    <- readOGR(paste0(data0dir, "waterways_osm_code.shp"))
-head(waterways_osm_shp)
+openareas_shp      <- readOGR(paste0(data0dir,"openareascode.shp"))
+head(openareas_shp)
+plot(openareas_shp)
 
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"waterways_osm_code.shp"),
+               paste0(data0dir,"openareascode.shp"),
                paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "waterways_osm_code.tif"),
-               "wtrwys_"
+               paste0(data0dir, "openareascode.tif"),
+               "open_code"
 ))
-plot(raster(paste0(data0dir, "waterways_osm_code.tif")))
-gdalinfo(paste0(data0dir,"waterways_osm_code.tif",mm=T))
+plot(raster(paste0(data0dir, "openareascode.tif")))
+gdalinfo(paste0(data0dir,"openareascode.tif",mm=T))
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 12/ WATER NATURAL OSM  
-# MORE INFO page 11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## fclass -> "spring"
-water_natural  <- readOGR(paste0(tmpdir,"gis_osm_natural_free_1.shp"))
-levels(as.factor(water_natural$fclass))
+##################### 10/ UNSUITABLE AREAS 
+# "nature_reserve", "military", "national_park" and "wetlands"
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+##################### 10.1./ 
+# MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+## fclass -> "nature_reserve", "military" and "national_park"
+unsuitable       <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
+str(unsuitable)
+levels(as.factor(unsuitable$fclass))
 
 #0 is NODATA
-water_natural$water_code                                             <-0
-#1 is spring
-water_natural$water_code[which(grepl("spring",water_natural$fclass))]<-1
-water_natural
-head(water_natural)
+unsuitable$unsuit_code                                                  <-0
+#1 is nature_reserve
+unsuitable$unsuit_code[which(grepl("nature_reserve",unsuitable$fclass))]<-1
+#2 is military
+unsuitable$unsuit_code[which(grepl("military",unsuitable$fclass))]      <-2
+#3 is national_park
+unsuitable$unsuit_code[which(grepl("national_park",unsuitable$fclass))] <-3
+unsuitable
+head(unsuitable)
+
+#Use a filter function to only take into account the points related to health facilities
+unsuitable_only  <- unsuitable[unsuitable$unsuit_code !=0,]
+str(unsuitable_only@data)
+levels(as.factor(unsuitable_only$unsuit_code))
+#there is no national park recorded in Niger with this dataset
+
+## REPROJECT
+unsuitable_only_utm        <- spTransform(unsuitable_only, crs(mask0))
+#/!\focusing on Niger
+unsuitable_only_utm_extent <- crop(unsuitable_only_utm,(aoi_utm))
+#Cropping worked
+
+plot(unsuitable_only_utm)
+plot(unsuitable_only_utm_extent)
+plot(aoi_utm, add=TRUE)
+
+str(unsuitable_only_utm_extent)
+writeOGR(unsuitable_only_utm_extent, paste0(data0dir,"unsuitcode.shp"), layer= "unsuitcode.shp",driver='ESRI Shapefile', overwrite=T)
+
+unsuit_shp           <- readOGR(paste0(data0dir,"unsuitcode.shp"))
+plot(unsuit_shp)
+
+## RASTERIZE 
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir,"unsuitcode.shp"),
+               paste0(griddir,"mask0_comp.tif"),
+               paste0(data0dir, "unsuit.tif"),
+               "unst_cd"
+))
+plot(raster(paste0(data0dir, "unsuit.tif")))
+gdalinfo(paste0(data0dir,"unsuit.tif",mm=T))
+
+##################### 10.2./ 
+# MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+## fclass -> "wetland" 
+wetland_osm      <- readOGR(paste0(tmpdir,"gis_osm_water_a_free_1.shp"))
+levels(as.factor(wetland_osm$fclass))
+
+#0 is NODATA
+wetland_osm$water_code                                                  <-0
+#1 is wetland
+wetland_osm$water_code[which(grepl("wetland",wetland_osm$fclass))]      <-1
+
+head(wetland_osm)
 
 #Use a filter function to only take into account the points related to water 
-water_natural_only           <- water_natural[water_natural$water_code !=0,]
-str(water_natural_only@data)
-levels(as.factor(water_natural_only$water_code))
+wetland_osm_only     <- wetland_osm[wetland_osm$water_code !=0,]
+levels(as.factor(wetland_osm_only$fclass))
 
 ## REPROJECT
-water_natural_only_utm<-spTransform(water_natural_only, crs(mask0))
+wetland_osm_only_utm        <-spTransform(wetland_osm_only, crs(mask0))
+#/!\focusing on Niger
+wetland_osm_only_utm_extent <- crop(wetland_osm_only_utm,(aoi_utm))
+wetland_osm_only_utm_extent
+plot(wetland_osm_only_utm)
+plot(wetland_osm_only_utm_extent)
+plot(aoi_utm, add=T)
+#Cropping worked
+writeOGR(wetland_osm_only_utm_extent, paste0(data0dir, "wetland_osmcode.shp"),layer="wetland_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
 
-#/!\focusing on Niger 
-water_natural_only_utm_extent <- crop(water_natural_only_utm,(aoi_utm))
-#Error in x@coords[i, , drop = FALSE] : subscript out of bounds
-
-writeOGR(water_natural_only_utm, paste0(data0dir,"water_naturalcode.shp"), layer = "water_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
-
-water_natural_shp             <- readOGR(paste0(data0dir,"water_naturalcode.shp"))
-plot(water_natural_shp)
-
+wetland_osm_shp             <- readOGR(paste0(data0dir,"wetland_osmcode.shp"))
+head(wetland_osm_shp)
+plot(wetland_osm_shp)
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"water_naturalcode.shp"),
+               paste0(data0dir,"wetland_osmcode.shp"),
                paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "water_naturalcode.tif"),
+               paste0(data0dir, "wetland_osmcode.tif"),
                "water_code"
 ))
-plot(raster(paste0(data0dir, "water_naturalcode.tif")))
-gdalinfo(paste0(data0dir,"water_naturalcode.tif",mm=T))
+plot(raster(paste0(data0dir, "wetland_osmcode.tif")))
+gdalinfo(paste0(data0dir,"wetland_osmcode.tif",mm=T))
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 13/ELECTRIC LINES 
-# Electricity Transmission Network
-# https://energydata.info/dataset/niger-electricity-transmission-network-2015
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#See details on : http://africagrid.energydata.info/#
-url            <- "https://development-data-hub-s3-public.s3.amazonaws.com/ddhfiles/145469/330132663320kvlinesniger.zip"
-file           <- "330132663320kvlinesniger.zip"
-
-download.file(url = url,
-              destfile = paste0(elecdir,file))
-
-system(sprintf("unzip -o %s -d %s",
-               paste0(elecdir,file),
-               elecdir))
-
-electricity    <- readOGR(paste0(elecdir,"330_132_66_33_20_kV_lines_NIGER.shp"))
-head(electricity)
-levels(as.factor(electricity$voltage_kV))
-levels(as.factor(electricity$status))
-levels(as.factor(electricity$source))
-levels(as.factor(electricity$year))
-
-#0 is "Planned"
-electricity$status_code                                             <-0
-#1 is "Existing"
-electricity$status_code[which(grepl("Existing",electricity$status))]<-1
-electricity
-head(electricity)
-
-#Use a filter function to only take into account the points related to the electricity transmission network that exists already
-electricity_existing_only    <- electricity[electricity$status_code !=0,]
-str(electricity_existing_only@data)
-levels(as.factor(electricity_existing_only$status_code))
-
-plot(electricity_existing_only)
-plot(aoi, add=T)
-
-## REPROJECT
-electricity_existing_only_utm<-spTransform(electricity_existing_only, crs(mask0))
-electricity_existing_only_utm
-#/!\focusing on Niger ---->>>> DOES THE NEXT LINE (CROPPING) ACTUALLY DO SOMETHING? 
-electricity_existing_only_utm_extent <- crop(electricity_existing_only_utm,(aoi_utm))
-electricity_existing_only_utm_extent
-electricity_existing_only_utm
-plot(electricity_existing_only_utm_extent)
-plot(aoi_utm,add=T) 
-writeOGR(electricity_existing_only_utm_extent, paste0(data0dir, "electricity_code.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
-
-electricity_code            <- readOGR(paste0(data0dir,"electricity_code.shp"))
-head(electricity_code)
-electricity_code
-
-## RASTERIZE 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"electricity_code.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "electricity_code.tif"),
-               "stts_cd "
-))
-plot(raster(paste0(data0dir, "electricity_code.tif")))
-gdalinfo(paste0(data0dir,"electricity_code.tif",mm=T))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # II/ RASTERS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1280,7 +1286,7 @@ slope_deg <- terrain(srtm_allfiles, opt='slope', unit='degrees')
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 3/ PRECIPITATION
-# ------> Find other data : raster for the country
+# ------> Find data : raster for the country
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #Getting the Data from: https://biogeo.ucdavis.edu/data/climate/worldclim/1_4/tiles/cur/prec_26.zip
