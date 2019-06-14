@@ -227,6 +227,7 @@ plot(aoi_utm, add=T)
 
 ##################### GET OSM DATA 
 #See details on : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+# GET THE DATA FOR YOUR COUNTRY ON http://download.geofabrik.de/
 
 url         <- "http://download.geofabrik.de/africa/niger-latest-free.shp.zip"
 file        <- "niger-latest-free.shp.zip"
@@ -245,7 +246,7 @@ system(sprintf("unzip -o %s -d %s",
 ##################### 1-1/ WATER POIS 
 # MORE INFO page 10-11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Points of interest -> fclass -> "drinking water", "fountain", "water_tower", "water_well" and "water_works"
+## Points of interest -> fclass -> "drinking water", "water_tower", "water_well" and "water_works"
 water_pois     <- readOGR(paste0(tmpdir,"gis_osm_pois_free_1.shp"))
 levels(as.factor(water_pois$fclass))
 
