@@ -1,7 +1,7 @@
 ####################################################################################
 ####### Object:  Suitability map - Site locations selection for displacement settings           
 ####### Author:  sarah.wertz@fao.org                        
-####### Update:  2019/06/13                                  
+####### Update:  2019/06/14                                  
 ####################################################################################
 rm(list=ls())
 
@@ -14,20 +14,20 @@ rm(list=ls())
 # +006 EXTRACT AND PREPARE LAYERS 
 # #    I/ SHAPEFILES 
 #      GET OSM DATA -> tmpdir
-# #    #            1/   RELIGION 
-# #    #            2-1/ WATER POIS OSM- drinking_water/water_tower/water_well/water_works
-# #    #            2-2/ WATER OSM - reservoir/river/water
-# #    #            2-3/ WATERWAYS OSM  - canal/drain/river/stream
-# #    #            2-4/ WATER NATURAL OSM - spring
-# #    #            3/   ELECTRIC LINES 
-# #    #            4/   ROADS 
+# #    #            1/   WATER RESOURCES
+# #    #            1-1/ WATER POIS OSM - drinking_water/water_tower/water_well/water_works
+# #    #            1-2/ WATER OSM - reservoir/river/water
+# #    #            1-3/ WATERWAYS OSM  - canal/drain/river/stream
+# #    #            1-4/ WATER NATURAL OSM - spring
+# #    #            2/   ELECTRIC LINES 
+# #    #            3/   ROADS 
+# #    #            4/   RELIGION 
 # #    #            5/   BIOMASS
-# #    #            6/   TOWNS 
+# #    #            6/   SETTLEMENTS 
 # #    #            7/   HEALTH 
 # #    #            8/   EDUCATION 
 # #    #            9/   OPEN AREAS
-# #    #            10/  UNSUITABLE AREAS
-
+# #    #            10/  UNSUITABLE AREAS - nature reserve/military/national park/agricultural land
 # #    II/ RASTERS 
 # #    #            11/  SRTM 
 # #    #            12/  GLOBAL FOREST CHANGE 
@@ -239,73 +239,10 @@ system(sprintf("unzip -o %s -d %s",
                tmpdir))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 1/ RELIGION 
-# MORE INFO page 11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+##################### 1/ WATER RESOURCES 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Places of worship -> fclass -> "muslim_" and "christian_" (using the function grepl)
-pofw        <- readOGR(paste0(tmpdir,"gis_osm_pofw_free_1.shp"))
-str(pofw)
-# Which religions do you have in your country ?
-levels(as.factor(pofw$fclass))
-
-#0 is NODATA
-pofw$religion_code                                       <-0
-#1 is muslims
-pofw$religion_code[which(grepl("christian",pofw$fclass))]<-1
-#2 is christians
-pofw$religion_code[which(grepl("muslim",pofw$fclass))]   <-2
-pofw
-head(pofw)
-
-## To see which lines have a muslim in it: "which(grepl("muslim",pow$fclass))"
-## REPROJECT
-pofw_utm    <-spTransform(pofw, crs(mask0))
-
-#/!\focusing on Niger
-pofw_utm_extent <- crop(pofw_utm,(aoi_utm))
-#Error in x@coords[i, , drop = FALSE] : subscript out of bounds -> all the points are already in Niger ?
-
-writeOGR(pofw_utm, paste0(data0dir, layer="religioncode.shp"), layer="religioncode.shp",driver='ESRI Shapefile', overwrite=TRUE)
-
-## Get R to read the shapefile that we have created
-pofw_shp    <- readOGR(paste0(data0dir, "religioncode.shp"))
-head(pofw_shp)
-plot(pofw_shp)
-
-## RASTERIZE by the column we created -> "religion_code" abbreviated by "rlgn_cd"
-# More info: https://gdal.org/programs/gdal_rasterize.html
-#            http://www.openforis.org/fileadmin/user_upload/Geospatial_Toolkit/OFGT_usermanual.pdf 
-
-#-v %s -> vector 
-#-i %s -> infile
-#-o %s -> outfile
-#-a %s -> attr
-#RASTERIZE USING MASKO_COMP?
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir, "religioncode.shp"),
-               paste0(griddir, "mask0.tif"),
-               paste0(data0dir, "religions.tif"),
-               "rlgn_cd"
-))
-gdalinfo(paste0(data0dir, "religions.tif"),hist=T)
-plot(raster(paste0(data0dir, "religions.tif")))
-
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir, "religioncode.shp"),
-               paste0(griddir, "mask0_comp.tif"),
-               paste0(data0dir, "religion_mask0_comp.tif"),
-               "rlgn_cd"
-))
-
-## Verify what you created
-plot(raster(paste0(data0dir, "religions.tif")))
-gdalinfo(paste0(data0dir, "religions.tif"),hist=T)
-gdalinfo(paste0(data0dir, "religions.tif"),mm=T)
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 2-1/ WATER POIS 
+##################### 1-1/ WATER POIS 
 # MORE INFO page 10-11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Points of interest -> fclass -> "drinking water", "fountain", "water_tower", "water_well" and "water_works"
@@ -355,7 +292,7 @@ plot(raster(paste0(data0dir, "water_pois_code.tif")))
 gdalinfo(paste0(data0dir,"water_pois_code.tif",mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 2-2/ WATER OSM  
+##################### 1-2/ WATER OSM  
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## fclass -> "reservoir", "river", "water" 
@@ -405,7 +342,7 @@ plot(raster(paste0(data0dir, "water_osmcode.tif")))
 gdalinfo(paste0(data0dir,"water_osmcode.tif",mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 2-3/ WATERWAYS OSM  
+##################### 1-3/ WATERWAYS OSM  
 # MORE INFO page 16 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## fclass -> "canal", "drain", "river" and "stream"
@@ -456,8 +393,9 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 ))
 plot(raster(paste0(data0dir, "waterways_osm_code.tif")))
 gdalinfo(paste0(data0dir,"waterways_osm_code.tif",mm=T))
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 2-4/ WATER NATURAL OSM  
+##################### 1-4/ WATER NATURAL OSM  
 # MORE INFO page 11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## fclass -> "spring"
@@ -500,7 +438,7 @@ plot(raster(paste0(data0dir, "water_naturalcode.tif")))
 gdalinfo(paste0(data0dir,"water_naturalcode.tif",mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 2/ WATER RESSOURCES - COMPILATION 
+##################### 1/ WATER RESSOURCES - COMPILATION 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### UNDERGROUND
 
@@ -524,9 +462,13 @@ waterways_osm_shp     <- readOGR(paste0(data0dir, "waterways_osm_code.shp"))
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 3/ELECTRIC LINES 
+##################### 2/ELECTRIC LINES 
 # Electricity Transmission Network
 # https://energydata.info/dataset/niger-electricity-transmission-network-2015
+
+# To understand better the distribution grid in Niger linked with the neighbouring countries,
+# Check the map below 
+# http://www.ecowrex.org/mapView/?mclayers=layerDistributionGrid&lat=1763532.7726153&lon=567395.7928025&zoom=7
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #See details on : http://africagrid.energydata.info/#
 url            <- "https://development-data-hub-s3-public.s3.amazonaws.com/ddhfiles/145469/330132663320kvlinesniger.zip"
@@ -564,19 +506,35 @@ plot(aoi, add=T)
 ## REPROJECT
 electricity_existing_only_utm<-spTransform(electricity_existing_only, crs(mask0))
 electricity_existing_only_utm
-#/!\focusing on Niger ---->>>> DOES THE NEXT LINE (CROPPING) ACTUALLY DO SOMETHING? 
-electricity_existing_only_utm_extent <- crop(electricity_existing_only_utm,(aoi_utm))
-electricity_existing_only_utm_extent
-electricity_existing_only_utm
-plot(electricity_existing_only_utm_extent)
-plot(aoi_utm,add=T) 
-writeOGR(electricity_existing_only_utm_extent, paste0(data0dir, "electricity_code.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
 
+#/!\focusing on Niger 
+electricity_existing_only_utm_extent <- crop(electricity_existing_only_utm,(aoi_utm))
+
+writeOGR(electricity_existing_only_utm_extent, paste0(data0dir, "electricity_code_extent.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
+electricity_code_extent     <- readOGR(paste0(data0dir,"electricity_code_extent.shp"))
+head(electricity_code_extent)
+plot(electricity_code)
+plot(aoi_utm,add=T)
+
+# do not crop to see the link with the neighbouring countries
+writeOGR(electricity_existing_only_utm, paste0(data0dir, "electricity_code.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
 electricity_code            <- readOGR(paste0(data0dir,"electricity_code.shp"))
 head(electricity_code)
-electricity_code
+plot(electricity_code)
+plot(aoi_utm,add=T)
 
-## RASTERIZE 
+## RASTERIZE cropped
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir,"electricity_code_extent.shp"),
+               paste0(griddir,"mask0_comp.tif"),
+               paste0(data0dir, "electricity_code_extent.tif"),
+               "stts_cd "
+))
+plot(raster(paste0(data0dir, "electricity_code_extent.tif")))
+gdalinfo(paste0(data0dir,"electricity_code_extent.tif",mm=T))
+
+## RASTERIZE uncropped
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
                paste0(data0dir,"electricity_code.shp"),
@@ -587,8 +545,9 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 plot(raster(paste0(data0dir, "electricity_code.tif")))
 gdalinfo(paste0(data0dir,"electricity_code.tif",mm=T))
 
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 4/ ROADS  
+##################### 3/ ROADS  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 ##################### FROM HUMDATA 
 # MORE INFO : https://data.humdata.org/dataset/niger-roads
@@ -698,7 +657,73 @@ plot(raster(paste0(data0dir, "roadscode.tif")))
 gdalinfo(paste0(data0dir,"roadscode.tif",mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 5/ BIOMASS  
+##################### 4/ RELIGION 
+# MORE INFO page 11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## Places of worship -> fclass -> "muslim_" and "christian_" (using the function grepl)
+pofw        <- readOGR(paste0(tmpdir,"gis_osm_pofw_free_1.shp"))
+str(pofw)
+# Which religions do you have in your country ?
+levels(as.factor(pofw$fclass))
+
+#0 is NODATA
+pofw$religion_code                                       <-0
+#1 is muslims
+pofw$religion_code[which(grepl("christian",pofw$fclass))]<-1
+#2 is christians
+pofw$religion_code[which(grepl("muslim",pofw$fclass))]   <-2
+pofw
+head(pofw)
+
+## To see which lines have a muslim in it: "which(grepl("muslim",pow$fclass))"
+## REPROJECT
+pofw_utm    <-spTransform(pofw, crs(mask0))
+
+#/!\focusing on Niger
+pofw_utm_extent <- crop(pofw_utm,(aoi_utm))
+#Error in x@coords[i, , drop = FALSE] : subscript out of bounds -> all the points are already in Niger ?
+
+writeOGR(pofw_utm, paste0(data0dir, layer="religioncode.shp"), layer="religioncode.shp",driver='ESRI Shapefile', overwrite=TRUE)
+
+## Get R to read the shapefile that we have created
+pofw_shp    <- readOGR(paste0(data0dir, "religioncode.shp"))
+head(pofw_shp)
+plot(pofw_shp)
+
+## RASTERIZE by the column we created -> "religion_code" abbreviated by "rlgn_cd"
+# More info: https://gdal.org/programs/gdal_rasterize.html
+#            http://www.openforis.org/fileadmin/user_upload/Geospatial_Toolkit/OFGT_usermanual.pdf 
+
+#-v %s -> vector 
+#-i %s -> infile
+#-o %s -> outfile
+#-a %s -> attr
+#RASTERIZE USING MASKO_COMP?
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir, "religioncode.shp"),
+               paste0(griddir, "mask0.tif"),
+               paste0(data0dir, "religions.tif"),
+               "rlgn_cd"
+))
+gdalinfo(paste0(data0dir, "religions.tif"),hist=T)
+plot(raster(paste0(data0dir, "religions.tif")))
+
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               paste0(data0dir, "religioncode.shp"),
+               paste0(griddir, "mask0_comp.tif"),
+               paste0(data0dir, "religion_mask0_comp.tif"),
+               "rlgn_cd"
+))
+
+## Verify what you created
+plot(raster(paste0(data0dir, "religions.tif")))
+gdalinfo(paste0(data0dir, "religions.tif"),hist=T)
+gdalinfo(paste0(data0dir, "religions.tif"),mm=T)
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 5/ BIOMASS  --> For Niger, not so good, may be useful for your country and aoi
 # "forest", "scrub" and "tree"
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 ##################### 5.1./ 
@@ -789,7 +814,9 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 plot(raster(paste0(data0dir, "tree_naturalcode.tif")))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 6/ TOWNS  -> /!\ HEAVY WHEN USING OSM DATA /!\-> NEED TO COMPRESS THE SHAPEFILE?
+##################### 6/ SETTLEMENTS  -> /!\ HEAVY WHEN USING OSM DATA /!\-> NEED TO COMPRESS THE SHAPEFILE?
+
+# # Not user friendly for Niger but may be different for your country or aoi
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 ##################### FROM HUMDATA 
 # MORE INFO : https://data.humdata.org/dataset/niger-settlements
@@ -840,7 +867,8 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 plot(raster(paste0(data0dir, "settlements_humdata.tif")))
 gdalinfo(paste0(data0dir,"settlements_humdata.tif",mm=T))
 
-##################### FROM OSM DATA -> /!\ HEAVY WHEN USING OSM DATA /!\-> NEED TO COMPRESS THE SHAPEFILE?
+##################### FROM OSM DATA -> /!\ HEAVY WHEN USING OSM DATA /!\
+
 ## fclass -> "building"
 buildings      <- readOGR(paste0(tmpdir,"gis_osm_buildings_a_free_1.shp"))
 levels(as.factor(buildings$fclass))
@@ -1050,19 +1078,21 @@ levels(as.factor(unsuitable$fclass))
 
 #0 is NODATA
 unsuitable$unsuit_code                                                  <-0
-#1 is nature_reserve
-unsuitable$unsuit_code[which(grepl("nature_reserve",unsuitable$fclass))]<-1
-#2 is military
-unsuitable$unsuit_code[which(grepl("military",unsuitable$fclass))]      <-2
-#3 is national_park
-unsuitable$unsuit_code[which(grepl("national_park",unsuitable$fclass))] <-3
+#1 is agricultural land : farms and areas where crops are grown
+unsuitable$unsuit_code[which(grepl("farm",unsuitable$fclass))]          <-1
+#2 is nature_reserve
+unsuitable$unsuit_code[which(grepl("nature_reserve",unsuitable$fclass))]<-2
+#3 is military
+unsuitable$unsuit_code[which(grepl("military",unsuitable$fclass))]      <-3
+#4 is national_park
+unsuitable$unsuit_code[which(grepl("national_park",unsuitable$fclass))] <-4
 unsuitable
 head(unsuitable)
 
 #Use a filter function to only take into account the points related to health facilities
 unsuitable_only  <- unsuitable[unsuitable$unsuit_code !=0,]
 str(unsuitable_only@data)
-levels(as.factor(unsuitable_only$unsuit_code))
+levels(as.factor(unsuitable_only$fclass))
 #there is no national park recorded in Niger with this dataset
 
 ## REPROJECT
