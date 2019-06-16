@@ -1,7 +1,7 @@
 ####################################################################################
 ####### Object:  Suitability map - Site locations selection for displacement settings           
 ####### Author:  sarah.wertz@fao.org                        
-####### Update:  2019/06/14                                  
+####### Update:  2019/06/16                                  
 ####################################################################################
 rm(list=ls())
 
@@ -26,14 +26,37 @@ rm(list=ls())
 # #    #            6/   SETTLEMENTS 
 # #    #            7/   HEALTH 
 # #    #            8/   EDUCATION 
-# #    #            9/   OPEN AREAS
-# #    #            10/  UNSUITABLE AREAS - nature reserve/military/national park/agricultural land
+# #    #            9/   OPEN AREAS - meadow/grass/heath=uncultivated land
+# #    #            10/  UNSUITABLE AREAS - agricultural land/nature reserve/military/national park/wetlands
 # #    II/ RASTERS 
 # #    #            11/  SRTM 
 # #    #            12/  GLOBAL FOREST CHANGE 
 # #    #            13/  LAND USE / LAND COVER 
 # #    #            14/  POPULATION DENSITY 
 # #    #            15/  PRECIPITATIONS 
+# #    III/ DATA TABLE
+# #    #            16/  CONFLICTS 
+
+# +007 ANALYSIS
+# #    I/ DISTANCES TO FEATURES 
+# #    #            1/   WATER RESOURCES
+# #    #            1-1/   UNDERGROUND WATER 
+# #    #            1-2/   SURFACE WATER 
+# #    #            2/   ELECTRIC LINES 
+# #    #            3/   ROADS
+# #    #            4/   BIOMASS
+# #    #            5/   SETTLEMENTS 
+# #    #            6/   HEALTH 
+# #    #            7/   EDUCATION 
+
+# #    II/ EXCLUDING FEATURES 
+# #    #            8/  SRTM 
+# #    #            9/  LAND USE / LAND COVER 
+# #    #            9-1/   OPEN AREAS - meadow/grass/heath=uncultivated land
+# #    #            9-2/   UNSUITABLE AREAS - agricultural land/nature reserve/military/national park/wetlands
+# #    #            10/  POPULATION DENSITY 
+
+# #    RELIGION? CONFLICTS? PRECIPITATIONS?
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +001 INSTALLATION OF THE PACKAGES
@@ -208,14 +231,12 @@ mask0_comp
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### COUNTRY'S BOUNDARIES ---> How to change the extent of the shapefile to the same as "mask0" (?) 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 aoi_utm
 writeOGR(aoi_utm,paste0(data0dir,"boundaries.shp"),"boundaries","ESRI Shapefile",overwrite_layer = T)
 
 aoi_utm     <- readOGR(paste0(data0dir,"boundaries.shp"))
 plot(mask0)
 plot(aoi_utm, add=T)
-
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +006 EXTRACT AND PREPARE LAYERS  
@@ -290,7 +311,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "water_code"
 ))
 plot(raster(paste0(data0dir, "water_pois_code.tif")))
-gdalinfo(paste0(data0dir,"water_pois_code.tif",mm=T))
+gdalinfo(paste0(data0dir,"water_pois_code.tif", mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 1-2/ WATER OSM  
@@ -360,7 +381,6 @@ waterways_osm$waterways_code[which(grepl("stream",waterways_osm$fclass))]<-2
 waterways_osm$waterways_code[which(grepl("canal",waterways_osm$fclass))] <-3
 #4 is drain
 waterways_osm$waterways_code[which(grepl("drain",waterways_osm$fclass))] <-4
-
 
 waterways_osm
 head(waterways_osm)
@@ -535,7 +555,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 plot(raster(paste0(data0dir, "electricity_code_extent.tif")))
 gdalinfo(paste0(data0dir,"electricity_code_extent.tif",mm=T))
 
-## RASTERIZE uncropped
+## RASTERIZE uncropped -> NEEDED ? OR WE USE THIS ONE TO VISUALIZE THE SOURCES OF ENERGY?
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
                paste0(data0dir,"electricity_code.shp"),
@@ -817,7 +837,7 @@ plot(raster(paste0(data0dir, "tree_naturalcode.tif")))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 6/ SETTLEMENTS  -> /!\ HEAVY WHEN USING OSM DATA /!\-> NEED TO COMPRESS THE SHAPEFILE?
 
-# # Not user friendly for Niger but may be different for your country or aoi
+# # OSM DATA -> Not user friendly for Niger but may be different for your country or aoi
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 ##################### FROM HUMDATA 
 # MORE INFO : https://data.humdata.org/dataset/niger-settlements
@@ -1023,7 +1043,7 @@ gdalinfo(paste0(data0dir,"education_comp.tif"),mm=T)
 ##################### 9/ OPEN SITES  
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-## fclass -> "meadow", "grass" and "heath"
+## fclass -> "meadow", "grass" and "heath=uncultivated land"
 openareas  <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
 str(openareas)
 levels(as.factor(openareas$fclass))
@@ -1068,11 +1088,11 @@ gdalinfo(paste0(data0dir,"openareascode.tif",mm=T))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 10/ UNSUITABLE AREAS 
-# "nature_reserve", "military", "national_park" and "wetlands"
+# "agricultural land", "nature_reserve", "military", "national_park" and "wetlands"
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 ##################### 10.1./ 
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
-## fclass -> "nature_reserve", "military" and "national_park"
+## fclass -> , "agricultural land", "nature_reserve", "military" and "national_park"
 unsuitable       <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
 str(unsuitable)
 levels(as.factor(unsuitable$fclass))
@@ -1175,6 +1195,7 @@ gdalinfo(paste0(data0dir,"wetland_osmcode.tif",mm=T))
 # DOWNLOAD MANUALLY THE TILES FALLING ON YOUR AOI
 # #OR CHECK : https://dwtkns.com/srtm30m/
 # OR CHECK : http://glcf.umd.edu/data/srtm/
+# Get more info on Niger: https://eros.usgs.gov/westafrica/ecoregions-and-topography/ecoregions-and-topography-niger
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # READ THE RASTER FILES 
@@ -1240,8 +1261,13 @@ slope_deg <- terrain(srtm_allfiles, opt='slope', unit='degrees')
 aspect_deg <- terrain(srtm_allfiles, opt='aspect', unit='degrees')
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 12/ GFC - Global Forest Change
+##################### 12/ BIOMASS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 12.1/ ABOVE GROUND BIOMASS PRODUCTION
+# https://wapor.apps.fao.org/catalog/1/L1_AGBP_A
+
+
+##################### 12.2/ GFC - Global Forest Change
 
 packages(Hmisc)
 packages(faraway)
@@ -1289,7 +1315,9 @@ for(file in list.files(gfcdir,glob2rx("Hansen*.tif"))){
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 13/ LU-LC - Land Use - Land Cover 
+# Land rights and Development in Niger : http://www.focusonland.com/countries/niger/
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 13.1/ LAND COVER
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1392,11 +1420,106 @@ writeRaster(denspop2_utm_extent_res,"denspop2_utm_extent_res.tif",format='GTiff'
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 15/ PRECIPITATIONS
-# ------> Find data : raster for the country
+# FROM WAPOR : https://wapor.apps.fao.org/
+# https://wapor.apps.fao.org/catalog/2
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-#Getting the Data from: https://biogeo.ucdavis.edu/data/climate/worldclim/1_4/tiles/cur/prec_26.zip
+# Lire un fichier csv avec des champs de type caract?re
+# /!\ if we don't put stringsAsFactors = F, les champs caractère sont des facteurs (parfois g?nant)
+precip_2018<-read.csv(paste0(waterdir,"WAPOR_prec_NER_2018.csv"), sep = ";",stringsAsFactors=FALSE)
+precip_2018
+head(precip_2018)
+class(precip_2018$Nom)
 
 
 #####################   CHECK YOUR DATA0 FILE : YOU SHOULD HAVE ALL THE FILES IN .tif AND UTM
 ?ls
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# III/ DATA TABLE 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# 
+url         <- "https://www.acleddata.com/download/2909/"
+file        <- "Africa_1997-2019_Jun08.xlsx"
+
+download.file(url = url,
+              destfile = paste0(tmpdir,file))
+
+# transform the .xls to a .csv ---> how?
+
+# read the .csv
+# pr?ciser le type de s?parateur d?cimal et le s?parateur de colonne
+stat <- read.csv("stat.csv", dec = ".", sep = ";",stringsAsFactors=FALSE)
+
+# Lire un fichier csv avec des champs de type caract?re
+# Attention, si on ne pr?cise pas stringsAsFactors = F, les champs caract?re sont des facteurs (parfois g?nant)
+loc_rdc<-read.csv("localite_rdc.csv", sep = ";")
+class(loc_rdc$Nom)
+loc_rdc<-read.csv("localite_rdc.csv", sep = ";",stringsAsFactors=FALSE)
+class(loc_rdc$Nom)
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +007 ANALYSIS  
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# I/ DISTANCES TO FEATURES 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 1/ WATER RESOURCES 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 1-1/   UNDERGROUND WATER 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 1-2/   SURFACE WATER 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 2/ ELECTRIC LINES
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 3/ ROADS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 4/ BIOMASS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 5/ SETTLEMENTS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 6/ HEALTH
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 7/ EDUCATION
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# II/ EXCLUDING FEATURES 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 8/ SRTM
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 9/ LAND USE / LAND COVER
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 9-1/   OPEN AREAS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 9-2/   UNSUITABLE AREAS - agricultural land/nature reserve/military/national park/wetlands
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##################### 10/ POPULATION DENSITY
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
