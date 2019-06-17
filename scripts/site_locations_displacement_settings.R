@@ -154,9 +154,13 @@ aoi        <- getData('GADM',
 plot(aoi)
 aoi
 
+proj_ea <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
+
 ## REPROJECT - SEARCH FOR YOUR COUNTRY'S COORDINATES ON https://epsg.io/
-EPSG0 <- CRS("+init=epsg:32631")
-aoi_utm<-spTransform(aoi, EPSG0)
+#EPSG0 <- CRS("+init=epsg:32631")
+aoi_utm<-spTransform(aoi, proj_ea)
+plot(aoi_utm)
+
 aoi_utm
 aoi_utm@bbox
 
@@ -483,7 +487,14 @@ waterways_osm_shp     <- readOGR(paste0(data0dir, "waterways_osm_code.shp"))
 #ADD A NEW COLUMN
 # WHERE UNDERGROUND WATER = 1 AND SURFACE WATER = 2
 
+system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\"",
+               paste0(data0dir,"water_pois_code.tif"),
+               paste0(data0dir,"water_osmcode.tif"),
+               paste0(data0dir,"tmp_water_combine.tif"),
+               "((A==1)+(A==2)+(A==4)+(B>0))*1+(A==3)*2"
+               ))
 
+GDALinfo(paste0(data0dir,"tmp_water_combine.tif"))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 2/ELECTRIC LINES 
 # Electricity Transmission Network
@@ -1201,16 +1212,40 @@ gdalinfo(paste0(data0dir,"wetland_osmcode.tif",mm=T))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # READ THE RASTER FILES 
-srtm           <- list.files(path=srtmdir, pattern="*.tif", full.names=T, recursive=FALSE)
+srtm           <- list.files(path=srtmdir, pattern=glob2rx("srtm*.tif"), full.names=T, recursive=FALSE)
+file <- srtm[1]
 
-# OR Merge SRTM tiles
-# -v -> Generate verbose output of mosaicing operations as they are done.
-# -o -> The name of the output file, which will be created if it does not already exist (defaults to “out.tif”).
+for(file in srtm){
+  
+  paste0(srtmdir,"aea_",basename(file))
+  system(sprintf("gdalwarp -co COMPRESS=LZW  -t_srs \"%s\" %s %s",
+                 proj_ea,
+                 file,
+                 paste0(srtmdir,"aea_",basename(file))
+  ))
+}
+
+system(sprintf("gdalbuildvrt  %s %s",
+               paste0(tmpdir, "tmp_srtm.vrt"),
+               paste0(srtmdir,"*.tif")
+))
+tmp_srtm_vrt <- raster(paste0(tmpdir, "tmp_srtm.vrt"))
+srtm_37_09_tif_2 <- raster(paste0(srtmdir, "aea_srtm_37_09.tif"))
+srtm_37_09_tif_2
+
+plot(tmp_srtm_vrt)
+#cannot see the vrt at the same time as the .tif file
+plot(aoi_utm, add=T)
+
+# OR Merge SRTM tiles if you want to get a .tif file
 system(sprintf("gdal_merge.py -v -o %s %s",
-               paste0(srtmdir,"*.tif"),
-               paste0(tmpdir, "tmp_srtm.tif")
-               
+               paste0(tmpdir, "tmp_srtm.tif"),
+               paste0(srtmdir,"*.tif")
                ))
+
+tmp_srtm_tif <- raster(paste0(tmpdir, "tmp_srtm.tif"))
+plot(tmp_srtm_tif)
+plot(aoi_utm, add=T)
 
 # CROP THE FILE FOR NIGER OR USING MASK0?
 system(sprintf("gdal_translate -co COMPRESS=LZW  -projwin %s %s %s %s %s %s",
@@ -1221,6 +1256,7 @@ system(sprintf("gdal_translate -co COMPRESS=LZW  -projwin %s %s %s %s %s %s",
                biomass_geosahel,                  #INPUT?
                paste0(biomassdir,"_extent",file3) #OUTPUT?
                ))
+
 
 # PROJECT IN UTM
 proj <- proj4string(mask0)
@@ -1267,6 +1303,7 @@ srtm_test40_08 <- raster(paste0(srtmdir, "srtm_40_08.tif"))
 srtm_test40_09 <- raster(paste0(srtmdir, "srtm_40_09.tif"))
 
 plot(srtm_test37_09)
+srtm_test37_09
 plot(srtm_test37_10)
 plot(srtm_test38_08)
 plot(srtm_test38_09)
