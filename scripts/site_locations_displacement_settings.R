@@ -108,7 +108,8 @@ data0dir  <- paste0(rootdir,"data0/")
 tmpdir    <- paste0(rootdir,"tmp/")
 admdir    <- paste0(rootdir,"data_in/adm/")
 lulcdir   <- paste0(rootdir,"data_in/lu-lc/")
-gfcdir    <- paste0(rootdir,"data_in/gfc/")
+biomassdir<- paste0(rootdir,"data_in/biomass/")
+gfcdir    <- paste0(biomassdir,"gfc/")
 waterdir  <- paste0(rootdir,"data_in/water/")
 denspopdir<- paste0(rootdir,"data_in/denspop/")
 roadsdir  <- paste0(rootdir, "data_in/roads/Roads/")
@@ -126,6 +127,7 @@ dir.create(data0dir,showWarnings = F)
 dir.create(tmpdir,showWarnings = F)
 dir.create(admdir,showWarnings = F)
 dir.create(lulcdir,showWarnings = F)
+dir.create(biomassdir,showWarnings = F)
 dir.create(gfcdir,showWarnings = F)
 dir.create(waterdir,showWarnings = F)
 dir.create(denspopdir,showWarnings = F)
@@ -1201,7 +1203,57 @@ gdalinfo(paste0(data0dir,"wetland_osmcode.tif",mm=T))
 # READ THE RASTER FILES 
 srtm           <- list.files(path=srtmdir, pattern="*.tif", full.names=T, recursive=FALSE)
 
-# VISUALIZE THEM --> More efficient way?
+# OR Merge SRTM tiles
+# -v -> Generate verbose output of mosaicing operations as they are done.
+# -o -> The name of the output file, which will be created if it does not already exist (defaults to “out.tif”).
+system(sprintf("gdal_merge.py -v -o %s %s",
+               paste0(srtmdir,"*.tif"),
+               paste0(tmpdir, "tmp_srtm.tif")
+               
+               ))
+
+# CROP THE FILE FOR NIGER OR USING MASK0?
+system(sprintf("gdal_translate -co COMPRESS=LZW  -projwin %s %s %s %s %s %s",
+               extent(mask0)@xmin,
+               extent(mask0)@ymax,
+               extent(mask0)@xmax,
+               extent(mask0)@ymin,
+               biomass_geosahel,                  #INPUT?
+               paste0(biomassdir,"_extent",file3) #OUTPUT?
+               ))
+
+# PROJECT IN UTM
+proj <- proj4string(mask0)
+system(sprintf("gdalwarp -co COMPRESS=LZW  -t_srs \"%s\" %s %s",
+               proj,
+               paste0(tmpdir,"_extent",srtm),
+               paste0(biomassdir,"_utm",srtm)
+))
+system(sprintf("gdalwarp -t_srs \"%s\" -co COMPRESS=LZW %s %s",
+               proj,
+               paste0("tmp_dem.tif"),
+               paste0("tmp_dem_utm.tif")
+))
+
+
+# Calculate slope
+# 
+slope_deg <- terrain(srtm_allfiles, opt='slope', unit='degrees')
+#or COMPUTE SLOPE
+system(sprintf("gdaldem slope -co COMPRESS=LZW %s %s",
+               paste0("tmp_dem_utm.tif"),
+               paste0("tmp_slope.tif")
+))
+
+# Calculate aspect
+aspect_deg <- terrain(srtm_allfiles, opt='aspect', unit='degrees')
+#or COMPUTE ASPECT
+system(sprintf("gdaldem aspect -co COMPRESS=LZW %s %s",
+               paste0("tmp_dem_utm.tif"),
+               paste0("tmp_aspect.tif")
+))
+
+# or VISUALIZE THEM --> More efficient way?
 # And how to see them next to each other ?
 srtm_test37_09 <- raster(paste0(srtmdir, "srtm_37_09.tif"))
 srtm_test37_10 <- raster(paste0(srtmdir, "srtm_37_10.tif"))
@@ -1254,20 +1306,43 @@ srtm_test37_09_utm
 # saved in the setwd --- "~/safe_sepal/data_in/"
 writeRaster(srtm_test37_09_utm,"srtm_test37_09_utm.tif",format='GTiff',overwrite=TRUE)
 
-# Calculate slope
-slope_deg <- terrain(srtm_allfiles, opt='slope', unit='degrees')
 
-# Calculate aspect
-aspect_deg <- terrain(srtm_allfiles, opt='aspect', unit='degrees')
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 12/ BIOMASS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 12.1/ ABOVE GROUND BIOMASS PRODUCTION
+##################### 12-1/ ABOVE GROUND BIOMASS PRODUCTION
 # https://wapor.apps.fao.org/catalog/1/L1_AGBP_A
 
 
-##################### 12.2/ GFC - Global Forest Change
+##################### 12-2/ BIOMASS VALUES 2018
+# http://sigsahel.info/ -> http://geosahel.info/Viewer.aspx?map=Analyse-Biomasse-Finale#
+
+# OPEN AND READ THE .TIF FILE
+
+file3             <- "BiomassValue2018_geosahel.tif" 
+biomass_geosahel  <- raster(paste0(biomassdir,file3))
+plot(biomass_geosahel)
+
+# CROP THE FILE FOR NIGER OR USING MASK0?
+system(sprintf("gdal_translate -co COMPRESS=LZW  -projwin %s %s %s %s %s %s",
+               extent(mask0)@xmin,
+               extent(mask0)@ymax,
+               extent(mask0)@xmax,
+               extent(mask0)@ymin,
+               biomass_geosahel,
+               paste0(biomassdir,"BiomassValue2018_geosahel_extent",file3)))
+
+proj <- proj4string(mask0)
+
+system(sprintf("gdalwarp -co COMPRESS=LZW  -t_srs \"%s\" %s %s",
+               proj,
+               paste0(biomassdir,"BiomassValue2018_geosahel_extent",file3),
+               paste0(biomassdir,"BiomassValue2018_geosahel_extent_utm",file3)
+))
+
+
+##################### 12-3/ GFC - Global Forest Change
 
 packages(Hmisc)
 packages(faraway)
@@ -1445,6 +1520,12 @@ download.file(url = url,
 
 # transform the .xls to a .csv ---> how?
 
+packages(xlsx)
+library("rio")
+xls <- dir(pattern = "xlsx")
+created <- mapply(convert, xls, gsub("xlsx", "csv", xls))
+unlink(xls) # delete xlsx files
+
 # read the .csv
 # pr?ciser le type de s?parateur d?cimal et le s?parateur de colonne
 stat <- read.csv("stat.csv", dec = ".", sep = ";",stringsAsFactors=FALSE)
@@ -1470,12 +1551,13 @@ class(loc_rdc$Nom)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 1-1/   UNDERGROUND WATER 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 1-2/   SURFACE WATER 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
+               paste0(fordir,"forets_utm.tif"),
+               paste0(fordir,"dist_to_forets.tif")
+))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 2/ ELECTRIC LINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
