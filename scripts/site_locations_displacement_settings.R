@@ -1,7 +1,7 @@
 ####################################################################################
 ####### Object:  Suitability map - Site locations selection for displacement settings           
 ####### Author:  sarah.wertz@fao.org                        
-####### Update:  2019/06/16                                  
+####### Update:  2019/06/17                                  
 ####################################################################################
 rm(list=ls())
 
@@ -154,29 +154,29 @@ aoi        <- getData('GADM',
 plot(aoi)
 aoi
 
+## REPROJECT - COUNTRY'S COORDINATES https://epsg.io/
+# We used Africa Albers Equal Area Conic so we will have an equal area for any country in Africa
 proj_ea <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
+aoi_ea<-spTransform(aoi, proj_ea)
+plot(aoi_ea)
 
-## REPROJECT - SEARCH FOR YOUR COUNTRY'S COORDINATES ON https://epsg.io/
-#EPSG0 <- CRS("+init=epsg:32631")
-aoi_utm<-spTransform(aoi, proj_ea)
-plot(aoi_utm)
-
-aoi_utm
-aoi_utm@bbox
+aoi_ea
+aoi_ea@bbox
 
 # Get the country at a "commune" scale
+# For point 6, line 855
 aoi2        <- getData('GADM',
                        path=admdir,
                        country= "NER",
                        level=3)
 plot(aoi2)
-aoi2_utm<-spTransform(aoi2, EPSG0)
-writeOGR(aoi2_utm,paste0(data0dir,"boundaries_level3.shp"),"boundaries_level3","ESRI Shapefile",overwrite_layer = T)
+aoi2_ea<-spTransform(aoi2, proj_ea)
+writeOGR(aoi2_ea,paste0(data0dir,"boundaries_level3.shp"),"boundaries_level3","ESRI Shapefile",overwrite_layer = T)
 
 ## CREATE A RASTER LAYER BOX WITH INTEGER COLUMNS AND LINES / DEFINITION OF THE RESOLUTION, EXTENT AND CS
 
 res0        <- 30
-ext0        <- extent(aoi_utm)
+ext0        <- extent(aoi_ea)
 ext0[1]     <- (floor(ext0[1]/res0)+1)*res0
 ext0[2]     <- (floor(ext0[2]/res0)+1)*res0
 ext0[3]     <- (floor(ext0[3]/res0)+1)*res0
@@ -184,12 +184,12 @@ ext0[4]     <- (floor(ext0[4]/res0)+1)*res0
 nbcol0      <- (ext0[2]-ext0[1])/res0
 nbrow0      <- (ext0[4]-ext0[3])/res0
 
-extent(aoi_utm)
+extent(aoi_ea)
 ext0
 
 r           <- raster(ncols=nbcol0,nrows=nbrow0)
 extent(r)   <- ext0
-crs(r)      <- EPSG0
+crs(r)      <- proj_ea
 # r is an empty object at this point
 plot(r)
 # Function : ask R to add "1" in each cell for the extent and resolution of r -- RUN MAY TAKE TIME
@@ -199,11 +199,11 @@ set1f       <- function(x){rep(1, x)}
 rbox        <- init(r, fun=set1f, filename='rbox.tif', overwrite=TRUE)
 rbox
 plot(rbox)
-plot(aoi_utm,add=TRUE)
+plot(aoi_ea,add=TRUE)
 
 # Rasterize the polygon (.rds) object using rbox : S4 method for SpatialPolygons,Raster
 
-aoi_utm_rbox<- rasterize(aoi_utm, 
+aoi_ea_rbox<- rasterize(aoi_ea, 
                          rbox,
                          field=1,
                          fun='last',
@@ -215,12 +215,12 @@ aoi_utm_rbox<- rasterize(aoi_utm,
 # Write the .tif file
 file_mask = paste0(griddir,"mask0.tif")
 
-mask0       <- writeRaster(aoi_utm_rbox, filename= file_mask, overwrite=TRUE) 
+mask0       <- writeRaster(aoi_ea_rbox, filename= file_mask, overwrite=TRUE) 
 mask0
 plot(mask0)
 
 #mask0 has values=1 within Niger and nodata values outside -> comes from the rasterize function where background=NA(?)
-plot(aoi_utm_rbox)
+plot(aoi_ea_rbox)
 
 # /!\ Compress mask0
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s " ,
@@ -237,12 +237,12 @@ mask0_comp
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### COUNTRY'S BOUNDARIES ---> How to change the extent of the shapefile to the same as "mask0" (?) 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-aoi_utm
-writeOGR(aoi_utm,paste0(data0dir,"boundaries.shp"),"boundaries","ESRI Shapefile",overwrite_layer = T)
+aoi_ea
+writeOGR(aoi_ea,paste0(data0dir,"boundaries.shp"),"boundaries","ESRI Shapefile",overwrite_layer = T)
 
-aoi_utm     <- readOGR(paste0(data0dir,"boundaries.shp"))
+aoi_ea     <- readOGR(paste0(data0dir,"boundaries.shp"))
 plot(mask0)
-plot(aoi_utm, add=T)
+plot(aoi_ea, add=T)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +006 EXTRACT AND PREPARE LAYERS  
@@ -295,20 +295,22 @@ str(water_pois_only@data)
 levels(as.factor(water_pois_only$fclass))
 
 ## REPROJECT
-water_pois_only_utm<-spTransform(water_pois_only, crs(mask0))
-plot(water_pois_only_utm)
-plot(aoi_utm,add=T)
+water_pois_only_ea<-spTransform(water_pois_only, crs(mask0))
+plot(water_pois_only_ea)
+plot(aoi_ea,add=T)
 #/!\focusing on Niger 
-water_pois_only_utm_extent <- crop(water_pois_only_utm,(aoi_utm))
+water_pois_only_ea_extent <- crop(water_pois_only_ea,(aoi_ea))
 #Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
-writeOGR(water_pois_only_utm, paste0(data0dir, "water_pois_code.shp"), layer= "water_pois_code.shp", driver='ESRI Shapefile', overwrite=T)
+writeOGR(water_pois_only_ea, paste0(data0dir, "water_pois_code.shp"), layer= "water_pois_code.shp", driver='ESRI Shapefile', overwrite=T)
 
 water_pois_shp  <- readOGR(paste0(data0dir,"water_pois_code.shp"))
 plot(water_pois_shp)
 head(water_pois_shp)
 
 ## RASTERIZE 
+# More info: https://gdal.org/programs/gdal_rasterize.html
+#            http://www.openforis.org/fileadmin/user_upload/Geospatial_Toolkit/OFGT_usermanual.pdf 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
                paste0(data0dir,"water_pois_code.shp"),
@@ -345,19 +347,18 @@ str(water_osm_only@data)
 levels(as.factor(water_osm_only$fclass))
 
 ## REPROJECT
-water_osm_only_utm        <-spTransform(water_osm_only, crs(mask0))
+water_osm_only_ea        <-spTransform(water_osm_only, crs(mask0))
 
 #/!\focusing on Niger 
-water_osm_only_utm_extent <- crop(water_osm_only_utm,(aoi_utm))
-plot(water_osm_only_utm)
-plot(water_osm_only_utm_extent)
-plot(aoi_utm,add=T)
+water_osm_only_ea_extent <- crop(water_osm_only_ea,(aoi_ea))
+plot(water_osm_only_ea)
+plot(water_osm_only_ea_extent)
+plot(aoi_ea,add=T)
 
-writeOGR(water_osm_only_utm_extent, paste0(data0dir, "water_osmcode.shp"),layer="water_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
+writeOGR(water_osm_only_ea_extent, paste0(data0dir, "water_osmcode.shp"),layer="water_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
 
 water_osm_shp             <- readOGR(paste0(data0dir,"water_osmcode.shp"))
 head(water_osm_shp)
-
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
@@ -397,15 +398,15 @@ str(waterways_osm_only@data)
 levels(as.factor(waterways_osm_only$fclass))
 
 ## REPROJECT
-waterways_osm_only_utm<-spTransform(waterways_osm_only, crs(mask0))
+waterways_osm_only_ea<-spTransform(waterways_osm_only, crs(mask0))
 
 #/!\focusing on Niger 
-waterways_osm_only_utm_extent <- crop(waterways_osm_only_utm,(aoi_utm))
+waterways_osm_only_ea_extent <- crop(waterways_osm_only_ea,(aoi_ea))
 #Cropping worked
-plot(waterways_osm_only_utm_extent)
-plot(aoi_utm,add=T)
+plot(waterways_osm_only_ea_extent)
+plot(aoi_ea,add=T)
 
-writeOGR(waterways_osm_only_utm_extent, paste0(data0dir, "waterways_osm_code.shp"), layer="waterways_osm_code.shp", driver='ESRI Shapefile', overwrite=T)
+writeOGR(waterways_osm_only_ea_extent, paste0(data0dir, "waterways_osm_code.shp"), layer="waterways_osm_code.shp", driver='ESRI Shapefile', overwrite=T)
 
 waterways_osm_shp    <- readOGR(paste0(data0dir, "waterways_osm_code.shp"))
 head(waterways_osm_shp)
@@ -419,7 +420,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "wtrwys_"
 ))
 plot(raster(paste0(data0dir, "waterways_osm_code.tif")))
-gdalinfo(paste0(data0dir,"waterways_osm_code.tif",mm=T))
+gdalinfo(paste0(data0dir,"waterways_osm_code.tif"))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 1-4/ WATER NATURAL OSM  
@@ -442,13 +443,13 @@ str(water_natural_only@data)
 levels(as.factor(water_natural_only$water_code))
 
 ## REPROJECT
-water_natural_only_utm<-spTransform(water_natural_only, crs(mask0))
+water_natural_only_ea<-spTransform(water_natural_only, crs(mask0))
 
 #/!\focusing on Niger 
-water_natural_only_utm_extent <- crop(water_natural_only_utm,(aoi_utm))
+water_natural_only_ea_extent <- crop(water_natural_only_ea,(aoi_ea))
 #Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
-writeOGR(water_natural_only_utm, paste0(data0dir,"water_naturalcode.shp"), layer = "water_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
+writeOGR(water_natural_only_ea, paste0(data0dir,"water_naturalcode.shp"), layer = "water_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
 
 water_natural_shp             <- readOGR(paste0(data0dir,"water_naturalcode.shp"))
 plot(water_natural_shp)
@@ -462,7 +463,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "water_code"
 ))
 plot(raster(paste0(data0dir, "water_naturalcode.tif")))
-gdalinfo(paste0(data0dir,"water_naturalcode.tif",mm=T))
+gdalinfo(paste0(data0dir,"water_naturalcode.tif"))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 1/ WATER RESSOURCES - COMPILATION 
@@ -470,7 +471,9 @@ gdalinfo(paste0(data0dir,"water_naturalcode.tif",mm=T))
 ##################### UNDERGROUND
 
 #READ THE SOURCE DATA
+#"water_well" -> 3
 water_pois_shp        <- readOGR(paste0(data0dir,"water_pois_code.shp"))
+# "spring“ -> 1
 water_natural_shp     <- readOGR(paste0(data0dir,"water_naturalcode.shp"))
 
 #CREATE A NEW LAYER
@@ -479,22 +482,19 @@ water_natural_shp     <- readOGR(paste0(data0dir,"water_naturalcode.shp"))
 
 ##################### SURFACE
 
-#READ THE SOURCE DATA
-water_pois_shp        <- readOGR(paste0(data0dir,"water_pois_code.shp"))
-water_osm_shp         <- readOGR(paste0(data0dir,"water_osmcode.shp"))
-waterways_osm_shp     <- readOGR(paste0(data0dir, "waterways_osm_code.shp"))
+# WHERE SURFACE WATER = 1 AND UNDERGROUND WATER = 2
 
-#ADD A NEW COLUMN
-# WHERE UNDERGROUND WATER = 1 AND SURFACE WATER = 2
-
-system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\"",
+system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                paste0(data0dir,"water_pois_code.tif"),
                paste0(data0dir,"water_osmcode.tif"),
+               paste0(data0dir,"waterways_osm_code.tif"),
+               paste0(data0dir,"water_naturalcode.tif"),
                paste0(data0dir,"tmp_water_combine.tif"),
-               "((A==1)+(A==2)+(A==4)+(B>0))*1+(A==3)*2"
+               "((A==1)+(A==2)+(A==4)+(B>0)+(C>0))*1+((A==3)+(D==1))*2"
                ))
 
 GDALinfo(paste0(data0dir,"tmp_water_combine.tif"))
+plot(raster(paste0(data0dir, "tmp_water_combine.tif")))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 2/ELECTRIC LINES 
 # Electricity Transmission Network
@@ -538,20 +538,20 @@ plot(electricity_existing_only)
 plot(aoi, add=T)
 
 ## REPROJECT
-electricity_existing_only_utm<-spTransform(electricity_existing_only, crs(mask0))
-electricity_existing_only_utm
+electricity_existing_only_ea<-spTransform(electricity_existing_only, crs(mask0))
+electricity_existing_only_ea
 
 #/!\focusing on Niger 
-electricity_existing_only_utm_extent <- crop(electricity_existing_only_utm,(aoi_utm))
+electricity_existing_only_ea_crop <- crop(electricity_existing_only_ea,(aoi_ea))
 
-writeOGR(electricity_existing_only_utm_extent, paste0(data0dir, "electricity_code_extent.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
-electricity_code_extent     <- readOGR(paste0(data0dir,"electricity_code_extent.shp"))
-head(electricity_code_extent)
-plot(electricity_code)
-plot(aoi_utm,add=T)
+writeOGR(electricity_existing_only_ea_crop, paste0(data0dir, "electricity_code_crop.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
+electricity_code_crop     <- readOGR(paste0(data0dir,"electricity_code_extent.shp"))
+head(electricity_code_crop)
+plot(electricity_code_crop)
+plot(aoi_ea,add=T)
 
 # do not crop to see the link with the neighbouring countries
-writeOGR(electricity_existing_only_utm, paste0(data0dir, "electricity_code.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
+writeOGR(electricity_existing_only_ea, paste0(data0dir, "electricity_code.shp"), layer= "electricity_code.shp", driver='ESRI Shapefile', overwrite=T)
 electricity_code            <- readOGR(paste0(data0dir,"electricity_code.shp"))
 head(electricity_code)
 plot(electricity_code)
@@ -560,25 +560,13 @@ plot(aoi_utm,add=T)
 ## RASTERIZE cropped
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"electricity_code_extent.shp"),
+               paste0(data0dir,"electricity_code_crop.shp"),
                paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "electricity_code_extent.tif"),
+               paste0(data0dir, "electricity_code_crop.tif"),
                "stts_cd "
 ))
-plot(raster(paste0(data0dir, "electricity_code_extent.tif")))
-gdalinfo(paste0(data0dir,"electricity_code_extent.tif",mm=T))
-
-## RASTERIZE uncropped -> NEEDED ? OR WE USE THIS ONE TO VISUALIZE THE SOURCES OF ENERGY?
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"electricity_code.shp"),
-               paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "electricity_code.tif"),
-               "stts_cd "
-))
-plot(raster(paste0(data0dir, "electricity_code.tif")))
-gdalinfo(paste0(data0dir,"electricity_code.tif",mm=T))
-
+plot(raster(paste0(data0dir, "electricity_code_crop.tif")))
+gdalinfo(paste0(data0dir,"electricity_code_crop.tif"))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 3/ ROADS  
@@ -617,11 +605,11 @@ head(roads_humdata)
 plot(roads_humdata)
 
 ## REPROJECT
-roads_humdata_utm <- spTransform(roads_humdata, crs(mask0))
+roads_humdata_ea <- spTransform(roads_humdata, crs(mask0))
 #/!\focusing on Niger
-roads_humdata_utm_extent <- crop(roads_humdata_utm,(aoi_utm))
+roads_humdata_ea_crop <- crop(roads_humdata_ea,(aoi_ea))
 #Cropping worked
-writeOGR(roads_humdata_utm_extent, paste0(data0dir,"roads_humdata.shp"), layer= "roads_humdata.shp",driver='ESRI Shapefile', overwrite=T)
+writeOGR(roads_humdata_ea_crop, paste0(data0dir,"roads_humdata.shp"), layer= "roads_humdata.shp",driver='ESRI Shapefile', overwrite=T)
 levels(as.factor(roads_humdata$roads_code))
 
 roads_humdata     <- readOGR(paste0(data0dir,"roads_humdata.shp"))
@@ -649,8 +637,6 @@ levels(as.factor(roads$fclass))
 roads$roads_code                                        <-0
 #1 is motorway
 roads$roads_code[which(grepl("motorway",roads$fclass))] <-1
-
-
 #2 is trunk
 roads$roads_code[which(grepl("trunk",roads$fclass))]    <-2
 #3 is primary roads
@@ -662,18 +648,18 @@ roads$roads_code[which(grepl("tertiary",roads$fclass))] <-5
 roads
 head(roads)
 
-#Use a filter function to only take into account the points related to health facilities
+#Use a filter function to only take into account the points related to roads
 roads_only     <- roads[roads$roads_code !=0,]
 str(roads_only@data)
 levels(as.factor(roads_only$fclass))
 
 ## REPROJECT
-roads_only_utm <-spTransform(roads_only, crs(mask0))
-roads_only_utm
+roads_only_ea <-spTransform(roads_only, crs(mask0))
+roads_only_ea
 #/!\focusing on Niger
-roads_only_utm_extent <- crop(roads_only_utm,(aoi_utm))
+roads_only_ea_crop <- crop(roads_only_ea,(aoi_ea))
 #Cropping worked
-writeOGR(roads_only_utm_extent, paste0(data0dir,"roadscode.shp"), layer="roadscode.shp", driver='ESRI Shapefile', overwrite=T)
+writeOGR(roads_only_ea_crop, paste0(data0dir,"roadscode.shp"), layer="roadscode.shp", driver='ESRI Shapefile', overwrite=T)
 
 roads_shp      <- readOGR(paste0(data0dir, "roadscode.shp"))
 head(roads_shp)
@@ -688,36 +674,47 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "roads_code"
 ))
 plot(raster(paste0(data0dir, "roadscode.tif")))
-gdalinfo(paste0(data0dir,"roadscode.tif",mm=T))
+gdalinfo(paste0(data0dir,"roadscode.tif"))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 4/ RELIGION 
 # MORE INFO page 11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Places of worship -> fclass -> "muslim_" and "christian_" (using the function grepl)
+## Places of worship -> fclass -> "christian_", "jewish", "muslim_", "buddhist", "hindu", "taoist", "shintoist", "sikh" 
 pofw        <- readOGR(paste0(tmpdir,"gis_osm_pofw_free_1.shp"))
-str(pofw)
 # Which religions do you have in your country ?
 levels(as.factor(pofw$fclass))
 
 #0 is NODATA
 pofw$religion_code                                       <-0
-#1 is muslims
+#1 is christians
 pofw$religion_code[which(grepl("christian",pofw$fclass))]<-1
-#2 is christians
-pofw$religion_code[which(grepl("muslim",pofw$fclass))]   <-2
+#2 is jewish
+pofw$religion_code[which(grepl("jewish",pofw$fclass))]   <-2
+#3 is muslims
+pofw$religion_code[which(grepl("muslim",pofw$fclass))]   <-3
+#4 is buddhist
+pofw$religion_code[which(grepl("buddhist",pofw$fclass))] <-4
+#5 is hindu
+pofw$religion_code[which(grepl("hindu",pofw$fclass))]    <-5
+#6 is taoist
+pofw$religion_code[which(grepl("taoist",pofw$fclass))]   <-6
+#7 is shintoist
+pofw$religion_code[which(grepl("shintoist",pofw$fclass))]<-7
+#8 is sikh
+pofw$religion_code[which(grepl("sikh",pofw$fclass))]     <-8
 pofw
 head(pofw)
 
 ## To see which lines have a muslim in it: "which(grepl("muslim",pow$fclass))"
 ## REPROJECT
-pofw_utm    <-spTransform(pofw, crs(mask0))
+pofw_ea    <-spTransform(pofw, crs(mask0))
 
 #/!\focusing on Niger
-pofw_utm_extent <- crop(pofw_utm,(aoi_utm))
+pofw_ea_crop <- crop(pofw_ea,(aoi_ea))
 #Error in x@coords[i, , drop = FALSE] : subscript out of bounds -> all the points are already in Niger ?
 
-writeOGR(pofw_utm, paste0(data0dir, layer="religioncode.shp"), layer="religioncode.shp",driver='ESRI Shapefile', overwrite=TRUE)
+writeOGR(pofw_ea, paste0(data0dir, layer="religioncode.shp"), layer="religioncode.shp",driver='ESRI Shapefile', overwrite=TRUE)
 
 ## Get R to read the shapefile that we have created
 pofw_shp    <- readOGR(paste0(data0dir, "religioncode.shp"))
@@ -725,36 +722,17 @@ head(pofw_shp)
 plot(pofw_shp)
 
 ## RASTERIZE by the column we created -> "religion_code" abbreviated by "rlgn_cd"
-# More info: https://gdal.org/programs/gdal_rasterize.html
-#            http://www.openforis.org/fileadmin/user_upload/Geospatial_Toolkit/OFGT_usermanual.pdf 
-
-#-v %s -> vector 
-#-i %s -> infile
-#-o %s -> outfile
-#-a %s -> attr
-#RASTERIZE USING MASKO_COMP?
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir, "religioncode.shp"),
-               paste0(griddir, "mask0.tif"),
-               paste0(data0dir, "religions.tif"),
-               "rlgn_cd"
-))
-gdalinfo(paste0(data0dir, "religions.tif"),hist=T)
-plot(raster(paste0(data0dir, "religions.tif")))
 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
                paste0(data0dir, "religioncode.shp"),
                paste0(griddir, "mask0_comp.tif"),
-               paste0(data0dir, "religion_mask0_comp.tif"),
+               paste0(data0dir, "religions.tif"),
                "rlgn_cd"
 ))
-
 ## Verify what you created
 plot(raster(paste0(data0dir, "religions.tif")))
 gdalinfo(paste0(data0dir, "religions.tif"),hist=T)
-gdalinfo(paste0(data0dir, "religions.tif"),mm=T)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 5/ BIOMASS  --> For Niger, not so good, may be useful for your country and aoi
@@ -782,13 +760,13 @@ str(biomass_only@data)
 levels(as.factor(biomass_only$biom_code))
 
 ## REPROJECT
-biomass_only_utm <- spTransform(biomass_only, crs(mask0))
+biomass_only_ea <- spTransform(biomass_only, crs(mask0))
 
 # /!\focusing on Niger
-biomass_only_utm_extent <- crop(biomass_only_utm,(aoi_utm))
+biomass_only_ea_crop <- crop(biomass_only_ea,(aoi_ea))
 #Cropping worked
 
-writeOGR(biomass_only_utm_extent, paste0(data0dir,"biomcode.shp"), layer= "biomcode.shp",driver='ESRI Shapefile', overwrite=T)
+writeOGR(biomass_only_ea_crop, paste0(data0dir,"biomcode.shp"), layer= "biomcode.shp",driver='ESRI Shapefile', overwrite=T)
 
 ## Get R to read the shapefile that we have created to use it afterwards if needed
 biomass_shp      <- readOGR(paste0(data0dir,"biomcode.shp"))
@@ -826,13 +804,13 @@ str(tree_natural_only@data)
 levels(as.factor(tree_natural_only$natural_code))
 
 ## REPROJECT
-tree_natural_only_utm<-spTransform(tree_natural_only, crs(mask0))
+tree_natural_only_ea<-spTransform(tree_natural_only, crs(mask0))
 
 # /!\focusing on Niger
-tree_natural_only_utm_extent <- crop(tree_natural_only_utm,(aoi_utm))
+tree_natural_only_ea_crop <- crop(tree_natural_only_ea,(aoi_ea))
 #Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
-writeOGR(tree_natural_only_utm, paste0(data0dir,"tree_naturalcode.shp"), layer = "tree_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
+writeOGR(tree_natural_only_ea, paste0(data0dir,"tree_naturalcode.shp"), layer = "tree_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
 
 tree_natural_shp     <- readOGR(paste0(data0dir,"tree_naturalcode.shp"))
 plot(tree_natural_shp)
@@ -876,15 +854,15 @@ settlements_humdata$id_code <- seq.int(nrow(settlements_humdata))
 head(settlements_humdata)
 
 ## REPROJECT
-settlements_humdata_utm <- spTransform(settlements_humdata, crs(mask0))
-plot(settlements_humdata_utm)
-plot(aoi2,add=T)
+settlements_humdata_ea <- spTransform(settlements_humdata, crs(mask0))
+plot(settlements_humdata_ea)
+plot(aoi2_ea,add=T)
 
 #/!\focusing on Niger
-settlements_humdata_utm_extent <- crop(settlements_humdata_utm,(aoi_utm))
+settlements_humdata_ea_crop <- crop(settlements_humdata_ea,(aoi_ea))
 #Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
-writeOGR(settlements_humdata_utm, paste0(data0dir,"settlements_humdata.shp"), layer= "settlements_humdata.shp",driver='ESRI Shapefile', overwrite=T)
+writeOGR(settlements_humdata_ea, paste0(data0dir,"settlements_humdata.shp"), layer= "settlements_humdata.shp",driver='ESRI Shapefile', overwrite=T)
 
 settlements_humdata_shp        <- readOGR(paste0(data0dir, "settlements_humdata.shp"))
 head(settlements_humdata_shp)
@@ -899,7 +877,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "id_code"
 ))
 plot(raster(paste0(data0dir, "settlements_humdata.tif")))
-gdalinfo(paste0(data0dir,"settlements_humdata.tif",mm=T))
+gdalinfo(paste0(data0dir,"settlements_humdata.tif"))
 
 ##################### FROM OSM DATA -> /!\ HEAVY WHEN USING OSM DATA /!\
 
@@ -967,11 +945,11 @@ str(health_only@data)
 levels(as.factor(health_only$health_code))
 
 ## REPROJECT
-health_only_utm<-spTransform(health_only, crs(mask0))
-writeOGR(health_only_utm, paste0(data0dir,"healthcode.shp"), layer= "healthcode.shp",driver='ESRI Shapefile', overwrite=T)
+health_only_ea<-spTransform(health_only, crs(mask0))
+writeOGR(health_only_ea, paste0(data0dir,"healthcode.shp"), layer= "healthcode.shp",driver='ESRI Shapefile', overwrite=T)
 
 # /!\focusing on Niger
-health_only_utm_extent <- crop(health_only_utm,(aoi_utm))
+health_only_ea_crop <- crop(health_only_ea,(aoi_ea))
 # Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
 ## Get R to read the shapefile that we have created to use it afterwards if needed
@@ -988,7 +966,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "hlth_cd"
 ))
 plot(raster(paste0(data0dir, "health.tif")))
-gdalinfo(paste0(data0dir,"health.tif"),mm=T)
+gdalinfo(paste0(data0dir,"health.tif"))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 8/ EDUCATION  
@@ -1019,18 +997,15 @@ str(edu_only@data)
 levels(as.factor(edu_only$education_code))
 
 ## REPROJECT
-edu_only_utm <-spTransform(edu_only, crs(mask0))
+edu_only_ea <-spTransform(edu_only, crs(mask0))
 
 # /!\focusing on Niger
-edu_only_utm_extent <- crop(edu_only_utm,(aoi_utm))
+edu_only_ea_crop <- crop(edu_only_a,(aoi_ea))
 # Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
 # Compare the extent of the 
-edu_only_utm
-aoi_utm
-# xmin and ymin have to be cropped
-# xmax and ymax have to be extended
-# how should I proceed?
+edu_only_ea
+aoi_ea
 
 writeOGR(edu_only_mask0, paste0(data0dir, "educationcode.shp"), layer="educationcode.shp", driver='ESRI Shapefile', overwrite=T)
 
@@ -1049,7 +1024,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "edctn_c"
 ))
 plot(raster(paste0(data0dir, "education_comp.tif")))
-gdalinfo(paste0(data0dir,"education_comp.tif"),mm=T)
+gdalinfo(paste0(data0dir,"education_comp.tif"))
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1078,11 +1053,11 @@ str(openareas_only@data)
 levels(as.factor(openareas_only$fclass))
 
 ## REPROJECT
-openareas_only_utm <- spTransform(openareas_only, crs(mask0))
+openareas_only_ea <- spTransform(openareas_only, crs(mask0))
 #/!\focusing on Niger
-openareas_only_utm_extent <- crop(openareas_only_utm,(aoi_utm))
+openareas_only_ea_crop <- crop(openareas_only_ea,(aoi_ea))
 #Cropping worked
-writeOGR(openareas_only_utm_extent, paste0(data0dir,"openareascode.shp"), layer= "openareascode.shp",driver='ESRI Shapefile', overwrite=T)
+writeOGR(openareas_only_ea_crop, paste0(data0dir,"openareascode.shp"), layer= "openareascode.shp",driver='ESRI Shapefile', overwrite=T)
 
 openareas_shp      <- readOGR(paste0(data0dir,"openareascode.shp"))
 head(openareas_shp)
@@ -1097,7 +1072,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "open_code"
 ))
 plot(raster(paste0(data0dir, "openareascode.tif")))
-gdalinfo(paste0(data0dir,"openareascode.tif",mm=T))
+gdalinfo(paste0(data0dir,"openareascode.tif"))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 10/ UNSUITABLE AREAS 
@@ -1130,17 +1105,17 @@ levels(as.factor(unsuitable_only$fclass))
 #there is no national park recorded in Niger with this dataset
 
 ## REPROJECT
-unsuitable_only_utm        <- spTransform(unsuitable_only, crs(mask0))
+unsuitable_only_ea        <- spTransform(unsuitable_only, crs(mask0))
 #/!\focusing on Niger
-unsuitable_only_utm_extent <- crop(unsuitable_only_utm,(aoi_utm))
+unsuitable_only_ea_cropt <- crop(unsuitable_only_ea,(aoi_ea))
 #Cropping worked
 
-plot(unsuitable_only_utm)
-plot(unsuitable_only_utm_extent)
+plot(unsuitable_only_ea)
+plot(unsuitable_only_ea_crop)
 plot(aoi_utm, add=TRUE)
 
-str(unsuitable_only_utm_extent)
-writeOGR(unsuitable_only_utm_extent, paste0(data0dir,"unsuitcode.shp"), layer= "unsuitcode.shp",driver='ESRI Shapefile', overwrite=T)
+str(unsuitable_only_ea_crop)
+writeOGR(unsuitable_only_ea_crop, paste0(data0dir,"unsuitcode.shp"), layer= "unsuitcode.shp",driver='ESRI Shapefile', overwrite=T)
 
 unsuit_shp           <- readOGR(paste0(data0dir,"unsuitcode.shp"))
 plot(unsuit_shp)
@@ -1174,15 +1149,15 @@ wetland_osm_only     <- wetland_osm[wetland_osm$water_code !=0,]
 levels(as.factor(wetland_osm_only$fclass))
 
 ## REPROJECT
-wetland_osm_only_utm        <-spTransform(wetland_osm_only, crs(mask0))
+wetland_osm_only_ea        <-spTransform(wetland_osm_only, crs(mask0))
 #/!\focusing on Niger
-wetland_osm_only_utm_extent <- crop(wetland_osm_only_utm,(aoi_utm))
-wetland_osm_only_utm_extent
-plot(wetland_osm_only_utm)
-plot(wetland_osm_only_utm_extent)
+wetland_osm_only_ea_crop <- crop(wetland_osm_only_ea,(aoi_ea))
+wetland_osm_only_a_extent
+plot(wetland_osm_only_ea)
+plot(wetland_osm_only_ea_crop)
 plot(aoi_utm, add=T)
 #Cropping worked
-writeOGR(wetland_osm_only_utm_extent, paste0(data0dir, "wetland_osmcode.shp"),layer="wetland_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
+writeOGR(wetland_osm_only_ea_crop, paste0(data0dir, "wetland_osmcode.shp"),layer="wetland_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
 
 wetland_osm_shp             <- readOGR(paste0(data0dir,"wetland_osmcode.shp"))
 head(wetland_osm_shp)
