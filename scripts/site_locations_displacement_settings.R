@@ -155,12 +155,12 @@ plot(aoi)
 aoi
 
 ## REPROJECT - COUNTRY'S COORDINATES https://epsg.io/
-# We used Africa Albers Equal Area Conic so we will have an equal area for any country in Africa
-proj_ea <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
-aoi_ea<-spTransform(aoi, proj_ea)
+# Please use "Africa Albers Equal Area Conic" for a country that would not fit in 1 UTM zone
+# proj_ea <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
+# Since Niger fits in one UTM zone, we'll use that one
+proj_ea   <- CRS("+init=epsg:32631")
+aoi_ea   <-spTransform(aoi, proj_ea)
 plot(aoi_ea)
-
-aoi_ea
 aoi_ea@bbox
 
 # Get the country at a "commune" scale
@@ -214,7 +214,6 @@ aoi_ea_rbox<- rasterize(aoi_ea,
                          filename="")
 # Write the .tif file
 file_mask = paste0(griddir,"mask0.tif")
-
 mask0       <- writeRaster(aoi_ea_rbox, filename= file_mask, overwrite=TRUE) 
 mask0
 plot(mask0)
@@ -299,7 +298,7 @@ water_pois_only_ea<-spTransform(water_pois_only, crs(mask0))
 plot(water_pois_only_ea)
 plot(aoi_ea,add=T)
 #/!\focusing on Niger 
-water_pois_only_ea_extent <- crop(water_pois_only_ea,(aoi_ea))
+water_pois_only_ea_crop <- crop(water_pois_only_ea,(aoi_ea))
 #Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
 writeOGR(water_pois_only_ea, paste0(data0dir, "water_pois_code.shp"), layer= "water_pois_code.shp", driver='ESRI Shapefile', overwrite=T)
@@ -319,7 +318,7 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "water_code"
 ))
 plot(raster(paste0(data0dir, "water_pois_code.tif")))
-gdalinfo(paste0(data0dir,"water_pois_code.tif", mm=T))
+gdalinfo(paste0(data0dir,"water_pois_code.tif"))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 1-2/ WATER OSM  
@@ -338,7 +337,6 @@ water_osm$water_code[which(grepl("reservoir",water_osm$fclass))]<-2
 #2 is river
 water_osm$water_code[which(grepl("river",water_osm$fclass))]    <-3
 
-
 head(water_osm)
 
 #Use a filter function to only take into account the points related to water 
@@ -350,12 +348,12 @@ levels(as.factor(water_osm_only$fclass))
 water_osm_only_ea        <-spTransform(water_osm_only, crs(mask0))
 
 #/!\focusing on Niger 
-water_osm_only_ea_extent <- crop(water_osm_only_ea,(aoi_ea))
+water_osm_only_ea_crop <- crop(water_osm_only_ea,(aoi_ea))
 plot(water_osm_only_ea)
-plot(water_osm_only_ea_extent)
+plot(water_osm_only_ea_crop)
 plot(aoi_ea,add=T)
 
-writeOGR(water_osm_only_ea_extent, paste0(data0dir, "water_osmcode.shp"),layer="water_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
+writeOGR(water_osm_only_ea_crop, paste0(data0dir, "water_osmcode.shp"),layer="water_osmcode.shp",driver='ESRI Shapefile', overwrite=T)
 
 water_osm_shp             <- readOGR(paste0(data0dir,"water_osmcode.shp"))
 head(water_osm_shp)
@@ -401,12 +399,12 @@ levels(as.factor(waterways_osm_only$fclass))
 waterways_osm_only_ea<-spTransform(waterways_osm_only, crs(mask0))
 
 #/!\focusing on Niger 
-waterways_osm_only_ea_extent <- crop(waterways_osm_only_ea,(aoi_ea))
+waterways_osm_only_ea_crop <- crop(waterways_osm_only_ea,(aoi_ea))
 #Cropping worked
-plot(waterways_osm_only_ea_extent)
+plot(waterways_osm_only_ea_crop)
 plot(aoi_ea,add=T)
 
-writeOGR(waterways_osm_only_ea_extent, paste0(data0dir, "waterways_osm_code.shp"), layer="waterways_osm_code.shp", driver='ESRI Shapefile', overwrite=T)
+writeOGR(waterways_osm_only_ea_crop, paste0(data0dir, "waterways_osm_code.shp"), layer="waterways_osm_code.shp", driver='ESRI Shapefile', overwrite=T)
 
 waterways_osm_shp    <- readOGR(paste0(data0dir, "waterways_osm_code.shp"))
 head(waterways_osm_shp)
@@ -446,7 +444,7 @@ levels(as.factor(water_natural_only$water_code))
 water_natural_only_ea<-spTransform(water_natural_only, crs(mask0))
 
 #/!\focusing on Niger 
-water_natural_only_ea_extent <- crop(water_natural_only_ea,(aoi_ea))
+water_natural_only_ea_crop <- crop(water_natural_only_ea,(aoi_ea))
 #Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
 writeOGR(water_natural_only_ea, paste0(data0dir,"water_naturalcode.shp"), layer = "water_naturalcode.shp", driver='ESRI Shapefile', overwrite=T)
@@ -468,33 +466,29 @@ gdalinfo(paste0(data0dir,"water_naturalcode.tif"))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 1/ WATER RESSOURCES - COMPILATION 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### UNDERGROUND
 
-#READ THE SOURCE DATA
-#"water_well" -> 3
-water_pois_shp        <- readOGR(paste0(data0dir,"water_pois_code.shp"))
-# "spring“ -> 1
-water_natural_shp     <- readOGR(paste0(data0dir,"water_naturalcode.shp"))
-
-#CREATE A NEW LAYER
-# OR use a layer that already exist and add info in it
-
-
-##################### SURFACE
-
-# WHERE SURFACE WATER = 1 AND UNDERGROUND WATER = 2
-
-system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+# RASTER : SURFACE WATER = 1, other =0 
+system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                paste0(data0dir,"water_pois_code.tif"),
                paste0(data0dir,"water_osmcode.tif"),
                paste0(data0dir,"waterways_osm_code.tif"),
-               paste0(data0dir,"water_naturalcode.tif"),
-               paste0(data0dir,"tmp_water_combine.tif"),
-               "((A==1)+(A==2)+(A==4)+(B>0)+(C>0))*1+((A==3)+(D==1))*2"
+               paste0(data0dir,"surf_water.tif"),
+               "((A==1)+(A==2)+(A==4)+(B>0)+(C>0))*1"
                ))
 
-GDALinfo(paste0(data0dir,"tmp_water_combine.tif"))
-plot(raster(paste0(data0dir, "tmp_water_combine.tif")))
+GDALinfo(paste0(data0dir,"surf_water.tif"))
+plot(raster(paste0(data0dir, "surf_water.tif")))
+
+# RASTER : UNDERGROUND WATER = 1, other =0
+system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               paste0(data0dir,"water_pois_code.tif"),
+               paste0(data0dir,"water_naturalcode.tif"),
+               paste0(data0dir,"under_water.tif"),
+               "((A==3)+(B==1))*1"
+))
+
+GDALinfo(paste0(data0dir,"under_water.tif"))
+plot(raster(paste0(data0dir, "under_water.tif")))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 2/ELECTRIC LINES 
 # Electricity Transmission Network
@@ -571,7 +565,7 @@ gdalinfo(paste0(data0dir,"electricity_code_crop.tif"))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 3/ ROADS  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-##################### FROM HUMDATA 
+##################### FROM HUMDATA -> PAS TOP
 # MORE INFO : https://data.humdata.org/dataset/niger-roads
 url            <- "https://data.humdata.org/dataset/a388fd5d-0dbd-4d05-b047-7f5db50838dc/resource/06eb9b57-b170-4fd7-82f4-0c34ae52f4a7/download/roads.zip"
 file           <- "roads.zip"
@@ -712,7 +706,7 @@ pofw_ea    <-spTransform(pofw, crs(mask0))
 
 #/!\focusing on Niger
 pofw_ea_crop <- crop(pofw_ea,(aoi_ea))
-#Error in x@coords[i, , drop = FALSE] : subscript out of bounds -> all the points are already in Niger ?
+#Error in x@coords[i, , drop = FALSE] 
 
 writeOGR(pofw_ea, paste0(data0dir, layer="religioncode.shp"), layer="religioncode.shp",driver='ESRI Shapefile', overwrite=TRUE)
 
@@ -826,10 +820,10 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 plot(raster(paste0(data0dir, "tree_naturalcode.tif")))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 6/ SETTLEMENTS  -> /!\ HEAVY WHEN USING OSM DATA /!\-> NEED TO COMPRESS THE SHAPEFILE?
-
-# # OSM DATA -> Not user friendly for Niger but may be different for your country or aoi
+##################### 6/ SETTLEMENTS  
+#We will choose to use OSM data
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+
 ##################### FROM HUMDATA 
 # MORE INFO : https://data.humdata.org/dataset/niger-settlements
 url            <- "https://data.humdata.org/dataset/5d17ed45-74a6-4417-9801-6935dcdc9c86/resource/3970d02a-00b5-4e15-a8fb-6227aef45cc7/download/niger_pplp_ocha_itos.zip"
@@ -879,43 +873,57 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 plot(raster(paste0(data0dir, "settlements_humdata.tif")))
 gdalinfo(paste0(data0dir,"settlements_humdata.tif"))
 
-##################### FROM OSM DATA -> /!\ HEAVY WHEN USING OSM DATA /!\
+##################### FROM OSM DATA 
 
-## fclass -> "building"
-buildings      <- readOGR(paste0(tmpdir,"gis_osm_buildings_a_free_1.shp"))
-levels(as.factor(buildings$fclass))
+## fclass -> "towns"
+towns      <- readOGR(paste0(tmpdir,"gis_osm_places_free_1.shp"))
+levels(as.factor(towns$fclass))
 
-#1 is buildings
-buildings$buildings_code[which(grepl("building",buildings$fclass))]<-1
-buildings
-head(buildings)
+#0 is NODATA
+towns$towns_code                                          <-0
+#1 is city
+towns$towns_code[which(grepl("city",towns$fclass))]       <-1
+#2 is town
+towns$towns_code[which(grepl("town",towns$fclass))]       <-2
+#3 is village
+towns$towns_code[which(grepl("village",towns$fclass))]    <-3
+#4 is hamlet
+towns$towns_code[which(grepl("hamlet",towns$fclass))]     <-4
+#5 is national_capital
+towns$towns_code[which(grepl("national_capital",towns$fclass))]     <-5
+#5 is suburb
+towns$towns_code[which(grepl("suburb",towns$fclass))]     <-6
+towns
+head(towns)
 
-## REPROJECT -- MAY TAKE TIME
-buildings_utm            <-spTransform(buildings, crs(mask0))
-buildings_utm
+#Use a filter function to only take into account the points related to health facilities
+towns_only     <- towns[towns$towns_code !=0,]
+str(towns_only@data)
+levels(as.factor(towns_only$towns_code))
+
+## REPROJECT 
+towns_only_ea            <-spTransform(towns_only, crs(mask0))
+towns_only_ea
 
 #/!\focusing on Niger
-buildings_utm_extent <- crop(buildings_utm,aoi_utm)
-plot(buildings_utm_extent)
-plot(aoi_utm, add=T)
-#Cropping worked
-# WRITE SHAPEFILE -- MAY TAKE TIME
-writeOGR(buildings_utm_extent, paste0(data0dir,"buildingscode.shp"), layer= "buildingscode.shp",driver='ESRI Shapefile', overwrite=T)
+towns_only_ea_crop <- crop(towns_only_ea,aoi_ea)
+#Error in x@coords[i, , drop = FALSE] : subscript out of bounds
 
-buildings_shp        <- readOGR(paste0(data0dir, "buildingscode.shp"))
-plot(buildings_shp)
-plot(aoi_utm, add=T)
+writeOGR(towns_only_ea, paste0(data0dir,"townscode.shp"), layer= "townscode.shp",driver='ESRI Shapefile', overwrite=T)
+
+towns_shp        <- readOGR(paste0(data0dir, "townscode.shp"))
+plot(towns_shp)
+plot(aoi_ea, add=T)
 
 ## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"buildingscode.shp"),
+               paste0(data0dir,"townscode.shp"),
                paste0(griddir,"mask0_comp.tif"),
-               paste0(data0dir, "buildingscode.tif"),
-               "bldngs_"
+               paste0(data0dir, "townscode.tif"),
+               "towns_code"
 ))
-plot(raster(paste0(data0dir, "buildingscode.tif")))
-gdalinfo(paste0(data0dir,"buildingscode.tif",mm=T))
+plot(raster(paste0(data0dir, "townscode.tif")))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 7/ HEALTH  
@@ -1560,23 +1568,34 @@ class(loc_rdc$Nom)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 1/ WATER RESOURCES 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 1-1/   UNDERGROUND WATER 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##################### 1-2/   SURFACE WATER 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
-               paste0(fordir,"forets_utm.tif"),
-               paste0(fordir,"dist_to_forets.tif")
+#Surface water
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s BIGTIFF=YES",
+               paste0(data0dir,"surf_water.tif"),#source file
+               paste0(data0dir,"dist2_surf_water.tif") #destination file
 ))
+#Underground water
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
+               paste0(data0dir,"under_water.tif"),
+               paste0(data0dir,"dist2_under_water.tif") 
+))
+
+# Agréger ensuite les 2 couches de distance en gardant la valeur minimale.
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 2/ ELECTRIC LINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
+               paste0(data0dir,"electricity_code_crop.tif"),#source file
+               paste0(data0dir,"dist_to_electricity.tif") #destination file
+))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 3/ ROADS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
+               paste0(fordir,"roadscode.tif"),
+               paste0(fordir,"dist_to_roads.tif")
+))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 4/ BIOMASS
@@ -1586,7 +1605,10 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 5/ SETTLEMENTS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
+               paste0(fordir,"settlements_humdata.tif"),
+               paste0(fordir,"dist_to_settlements.tif")
+))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 6/ HEALTH
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
