@@ -1,7 +1,7 @@
 ####################################################################################
 ####### Object:  Suitability map - Site locations selection for displacement settings           
 ####### Author:  sarah.wertz@fao.org                        
-####### Update:  2019/06/17                                  
+####### Update:  2019/06/19                                  
 ####################################################################################
 rm(list=ls())
 
@@ -1200,11 +1200,11 @@ file <- srtm[1]
 
 for(file in srtm){
   
-  paste0(srtmdir,"aea_",basename(file))
+  paste0(srtmdir,"ea_",basename(file))
   system(sprintf("gdalwarp -co COMPRESS=LZW  -t_srs \"%s\" %s %s",
                  proj_ea,
                  file,
-                 paste0(srtmdir,"aea_",basename(file))
+                 paste0(srtmdir,"ea_",basename(file))
   ))
 }
 
@@ -1213,7 +1213,7 @@ system(sprintf("gdalbuildvrt  %s %s",
                paste0(srtmdir,"*.tif")
 ))
 tmp_srtm_vrt <- raster(paste0(tmpdir, "tmp_srtm.vrt"))
-srtm_37_09_tif_2 <- raster(paste0(srtmdir, "aea_srtm_37_09.tif"))
+srtm_37_09_tif_2 <- raster(paste0(srtmdir, "ea_srtm_37_09.tif"))
 srtm_37_09_tif_2
 
 plot(tmp_srtm_vrt)
@@ -1221,14 +1221,14 @@ plot(tmp_srtm_vrt)
 plot(aoi_utm, add=T)
 
 # OR Merge SRTM tiles if you want to get a .tif file
-system(sprintf("gdal_merge.py -v -o %s %s",
-               paste0(tmpdir, "tmp_srtm.tif"),
-               paste0(srtmdir,"*.tif")
-               ))
+#system(sprintf("gdal_merge.py -v -o %s %s",
+#               paste0(tmpdir, "tmp_srtm.tif"),
+#               paste0(srtmdir,"*.tif")
+#               ))
 
-tmp_srtm_tif <- raster(paste0(tmpdir, "tmp_srtm.tif"))
-plot(tmp_srtm_tif)
-plot(aoi_utm, add=T)
+#tmp_srtm_tif <- raster(paste0(tmpdir, "tmp_srtm.tif"))
+#plot(tmp_srtm_tif)
+#plot(aoi_utm, add=T)
 
 # CROP THE FILE FOR NIGER OR USING MASK0?
 system(sprintf("gdal_translate -co COMPRESS=LZW  -projwin %s %s %s %s %s %s",
@@ -1236,23 +1236,9 @@ system(sprintf("gdal_translate -co COMPRESS=LZW  -projwin %s %s %s %s %s %s",
                extent(mask0)@ymax,
                extent(mask0)@xmax,
                extent(mask0)@ymin,
-               biomass_geosahel,                  #INPUT?
-               paste0(biomassdir,"_extent",file3) #OUTPUT?
+               tmp_srtm_vrt,                  #INPUT
+               paste0(srtmdir,"tmp_srtm_extent.vrt")      #OUTPUT
                ))
-
-
-# PROJECT IN UTM
-proj <- proj4string(mask0)
-system(sprintf("gdalwarp -co COMPRESS=LZW  -t_srs \"%s\" %s %s",
-               proj,
-               paste0(tmpdir,"_extent",srtm),
-               paste0(biomassdir,"_utm",srtm)
-))
-system(sprintf("gdalwarp -t_srs \"%s\" -co COMPRESS=LZW %s %s",
-               proj,
-               paste0("tmp_dem.tif"),
-               paste0("tmp_dem_utm.tif")
-))
 
 
 # Calculate slope
@@ -1260,7 +1246,7 @@ system(sprintf("gdalwarp -t_srs \"%s\" -co COMPRESS=LZW %s %s",
 slope_deg <- terrain(srtm_allfiles, opt='slope', unit='degrees')
 #or COMPUTE SLOPE
 system(sprintf("gdaldem slope -co COMPRESS=LZW %s %s",
-               paste0("tmp_dem_utm.tif"),
+               paste0("tmp_dem_.tif"),
                paste0("tmp_slope.tif")
 ))
 
@@ -1271,61 +1257,6 @@ system(sprintf("gdaldem aspect -co COMPRESS=LZW %s %s",
                paste0("tmp_dem_utm.tif"),
                paste0("tmp_aspect.tif")
 ))
-
-# or VISUALIZE THEM --> More efficient way?
-# And how to see them next to each other ?
-srtm_test37_09 <- raster(paste0(srtmdir, "srtm_37_09.tif"))
-srtm_test37_10 <- raster(paste0(srtmdir, "srtm_37_10.tif"))
-srtm_test38_08 <- raster(paste0(srtmdir, "srtm_38_08.tif"))
-srtm_test38_09 <- raster(paste0(srtmdir, "srtm_38_09.tif"))
-srtm_test38_10 <- raster(paste0(srtmdir, "srtm_38_10.tif"))
-srtm_test39_08 <- raster(paste0(srtmdir, "srtm_39_08.tif"))
-srtm_test39_09 <- raster(paste0(srtmdir, "srtm_39_09.tif"))
-srtm_test39_10 <- raster(paste0(srtmdir, "srtm_39_10.tif"))
-srtm_test40_08 <- raster(paste0(srtmdir, "srtm_40_08.tif"))
-srtm_test40_09 <- raster(paste0(srtmdir, "srtm_40_09.tif"))
-
-plot(srtm_test37_09)
-srtm_test37_09
-plot(srtm_test37_10)
-plot(srtm_test38_08)
-plot(srtm_test38_09)
-plot(srtm_test38_10)
-plot(srtm_test39_08)
-plot(srtm_test39_09)
-plot(srtm_test39_10)
-plot(srtm_test40_08)
-plot(srtm_test40_09)
-
-# Put all the .tif in one vrt (virtual raster) 
-srtm_allfiles  <- list.files(path=srtmdir, pattern="*.tif", full.names=T, recursive=FALSE)
-output_vrt     <- paste0(data0dir, "srtm.vrt")
-output_tif     <- paste0(data0dir, "srtm.tif")
-
-gdalbuildvrt(gdalfile = srtm_allfiles, # uses all tiffs in the folder srtmdir
-             output.vrt = output_vrt,
-             separate=F,
-             verbose=TRUE
-)
-# Copy the virtual raster in an actual physical file
-# /!\ does not work
-gdal_translate(src_dataset = output_vrt, 
-               dst_dataset = output_tif, 
-               projwin=mask0,
-               options = c("BIGTIFF=YES", "COMPRESSION=LZW")
-)
-
-# APPLY THE CHANGES (resolution, extent, coordinate system) TO ALL AT THE SAME TIME
-
-# TRANSFORM THE COORDINATE SYSTEM -- USING EPSG0: +proj=utm
-# TEST FOR 1, how to do it for all the tiles at the same time ??
-EPSG0
-srtm_test37_09 <- raster(paste0(srtmdir, "srtm_37_09.tif"))
-srtm_test37_09_utm <- projectRaster(srtm_test37_09,crs = EPSG0) 
-srtm_test37_09_utm
-# saved in the setwd --- "~/safe_sepal/data_in/"
-writeRaster(srtm_test37_09_utm,"srtm_test37_09_utm.tif",format='GTiff',overwrite=TRUE)
-
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1586,15 +1517,15 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
-               paste0(data0dir,"electricity_code_crop.tif"),#source file
-               paste0(data0dir,"dist_to_electricity.tif") #destination file
+               paste0(data0dir,"electricity_code_crop.tif"),
+               paste0(data0dir,"dist2electricity.tif") 
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 3/ ROADS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
                paste0(fordir,"roadscode.tif"),
-               paste0(fordir,"dist_to_roads.tif")
+               paste0(fordir,"dist2roads.tif")
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1606,17 +1537,25 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ##################### 5/ SETTLEMENTS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
-               paste0(fordir,"settlements_humdata.tif"),
-               paste0(fordir,"dist_to_settlements.tif")
+               paste0(fordir,"townscode.tif"),
+               paste0(fordir,"dist2towns.tif")
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 6/ HEALTH
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
+               paste0(fordir,"health.tif"),
+               paste0(fordir,"dist2health.tif")
+))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##################### 7/ EDUCATION
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s",
+               paste0(fordir,"education_comp.tif"),
+               paste0(fordir,"dist2education.tif")
+))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # II/ EXCLUDING FEATURES 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
