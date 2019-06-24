@@ -62,6 +62,16 @@ system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                paste0(data0dir,"dist2under_water.tif")
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# WATER RESOURCES COMPILATION 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               paste0(data0dir,"dist2surf_water.tif"),
+               paste0(data0dir,"dist2under_water.tif"),
+               paste0(data0dir,"dist2water.tif"),
+               "A*B"
+))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  ELECTRIC LINES 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
@@ -166,4 +176,4 @@ system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                paste0(data0dir,"tmp_mask_dist2biomass_geosahel2018.tif"),
                paste0(data0dir,"dist2biomass_geosahel2018.tif")
 ))
-
+plot(raster(paste0(data0dir,"dist2biomass_geosahel2018.tif")))

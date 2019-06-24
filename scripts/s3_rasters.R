@@ -286,26 +286,37 @@ plot(raster(paste0(data0dir, "unsuitable.tif")))
 ## SRTM
 # Get more info on Niger: https://eros.usgs.gov/westafrica/ecoregions-and-topography/ecoregions-and-topography-niger
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# SRTM 90m - READ THE RASTER FILES - http://srtm.csi.cgiar.org/srtmdata/ - ~30 meter on the line of the equator
-srtm           <- list.files(
-                             path=srtmdir,
-                             pattern=glob2rx("srtm*.tif"),
-                             full.names=T,
-                             recursive=FALSE)
+# SRTM 90m 
+srtm01 <- getData('SRTM',lon=0,lat=15, path = srtmdir)
+srtm11 <- getData('SRTM',lon=5,lat=15, path = srtmdir)
+srtm21 <- getData('SRTM',lon=10,lat=15, path = srtmdir)
+srtm02 <- getData('SRTM',lon=0,lat=20, path = srtmdir)
+srtm12 <- getData('SRTM',lon=5,lat=20, path = srtmdir)
+srtm22 <- getData('SRTM',lon=10,lat=20, path = srtmdir)
+srtm32 <- getData('SRTM',lon=15,lat=20, path = srtmdir)
+srtm13 <- getData('SRTM',lon=5,lat=25, path = srtmdir)
+srtm23 <- getData('SRTM',lon=10,lat=25, path = srtmdir)
+srtm33 <- getData('SRTM',lon=15,lat=25, path = srtmdir)
+
+srtm   <- list.files(
+                     path=srtmdir,
+                     pattern=glob2rx("srtm*.tif"),
+                     full.names=T,
+                     recursive=FALSE)
 file <- srtm
 file
-
 # MERGE INTO .tif
 system(sprintf("gdal_merge.py -o %s -v  %s",
                paste0(srtmdir, "tmp_srtm.tif"),
                paste0(file,collapse= " ")
 ))
-
 # COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
                paste0(srtmdir,"tmp_srtm.tif"),
                paste0(srtmdir,"tmp_comp_srtm.tif")
 ))
+plot(raster(paste0(srtmdir,"tmp_comp_srtm.tif")))
+plot(aoi,add=T)
 
 # DEFINE MASK TO ALIGN ON
 mask   <- raster(paste0(griddir,"mask.tif"))
@@ -328,9 +339,14 @@ system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %
                input,
                ouput
 ))
+# COMPUTE ELEVATION
+system(sprintf("gdaldem hillshade -co COMPRESS=LZW %s %s",
+               paste0(data0dir,"srtm.tif"),
+               paste0(data0dir,"elevation.tif")
+))
 
 # COMPUTE SLOPE
-system(sprintf("gdaldem slope -co COMPRESS=LZW %s %s",
+system(sprintf("gdaldem slope -co COMPRESS=LZW -p %s %s",
                paste0(data0dir,"srtm.tif"),
                paste0(data0dir,"slope.tif")
 ))
@@ -362,6 +378,68 @@ res    <- res(raster(mask))[1]
 # DEFINE INPUT AND OUTPUT
 input  <- paste0(biomassdir,"tmp_comp_biomass_geosahel2018.tif")
 ouput  <- paste0(data0dir,"biomass_geosahel2018.tif")
+
+system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
+               proj4string(raster(mask)),
+               extent(raster(mask))@xmin,
+               extent(raster(mask))@ymin,
+               extent(raster(mask))@xmax,
+               extent(raster(mask))@ymax,
+               res(raster(mask))[1],
+               res(raster(mask))[2],
+               input,
+               ouput
+))
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## PRECIPITATIONS - WAPOR
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+preci         <- paste0(waterdir,"L1_PCP_18_clipped.tif") 
+
+system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
+               preci,
+               paste0(waterdir,"tmp_comp_L1_PCP_18_clipped.tif")
+))
+
+# DEFINE MASK TO ALIGN ON
+mask   <- raster(paste0(griddir,"mask.tif"))
+proj   <- proj4string(raster(mask))
+extent <- extent(raster(mask))
+res    <- res(raster(mask))[1]
+
+# DEFINE INPUT AND OUTPUT
+input  <- paste0(waterdir,"tmp_comp_L1_PCP_18_clipped.tif")
+ouput  <- paste0(data0dir,"preci_wapor_2018.tif")
+
+system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
+               proj4string(raster(mask)),
+               extent(raster(mask))@xmin,
+               extent(raster(mask))@ymin,
+               extent(raster(mask))@xmax,
+               extent(raster(mask))@ymax,
+               res(raster(mask))[1],
+               res(raster(mask))[2],
+               input,
+               ouput
+))
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## LANDCOVER - WAPOR
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+lc         <- paste0(lulcdir,"L1_LCC_15_clipped.tif") 
+
+system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
+               lc,
+               paste0(lulcdir,"tmp_comp_L1_LCC_15_clipped.tif")
+))
+
+# DEFINE MASK TO ALIGN ON
+mask   <- raster(paste0(griddir,"mask.tif"))
+proj   <- proj4string(raster(mask))
+extent <- extent(raster(mask))
+res    <- res(raster(mask))[1]
+
+# DEFINE INPUT AND OUTPUT
+input  <- paste0(lulcdir,"tmp_comp_L1_LCC_15_clipped.tif")
+ouput  <- paste0(data0dir,"lc_wapor_2015.tif")
 
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
                proj4string(raster(mask)),
