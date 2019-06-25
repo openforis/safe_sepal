@@ -23,3 +23,8 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%
                 (A==3)*(B==3)*(C==3)*3"
 ))
 
+
+
+## SURFACE MINIMALE /PERS
+# calculer le nombre de pixels minimums à prendre en compte pour un nombre minimum de personne:
+# 3.5m² / pers and 4.5m² / pers in cold climates

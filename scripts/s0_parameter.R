@@ -2,7 +2,7 @@
 # +002 SET WORKING ENVIRONMENT 
 # +003 CREATING OBJECTS ON R
 # +004 CREATING FOLDERS ON THE COMPUTER
-
+rm(list=ls())
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +001 INSTALLATION OF THE PACKAGES
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
