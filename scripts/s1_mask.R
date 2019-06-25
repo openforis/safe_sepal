@@ -6,16 +6,14 @@
 #COUNTRY CODE ON http://kirste.userpage.fu-berlin.de/diverse/doc/ISO_3166.html
 aoi        <- getData('GADM',
                       path=admdir,
-                      country= "NER",
+                      country= countrycode,
                       level=0)
 plot(aoi)
-aoi
 
 ## REPROJECT 
 #COUNTRY'S COORDINATES https://epsg.io/
 #proj_ea   <- CRS("+init=epsg:32631")
 
-proj_ea <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
 aoi_ea   <-spTransform(aoi, proj_ea)
 plot(aoi_ea)
 aoi_ea@bbox

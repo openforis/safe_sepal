@@ -2,7 +2,17 @@
 
 output  <- paste0(data0dir, "suitability_map.tif")
 
-system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s  --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               paste0(data0dir,"military.tif"),
+               paste0(data0dir,"slope.tif"),
+               paste0(data0dir,"wetlands.tif"),
+               paste0(data0dir,"reserves.tif"),
+               
+               paste0(data0dir, "tmp_mask_exclusion.tif"),
+               "((A==1)+(B>20)+(C==1)+(D==1))>0"
+))
+
+system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s -L %s -M % --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                paste0(data0dir,"score_surf_water.tif"),
                paste0(data0dir,"score_under_water.tif"),
                paste0(data0dir,"score_preci.tif"),
@@ -12,15 +22,49 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%
                paste0(data0dir,"score_roads.tif"),
                paste0(data0dir,"score_borders.tif"),
                
-               
                paste0(data0dir,"score_electricity.tif"),
                paste0(data0dir,"score_towns.tif"),
                paste0(data0dir,"score_health.tif"),
                paste0(data0dir,"score_education.tif"),
-               output,
-               "(A==1)*(B==1)*(C==1)*1+
-                (A==2)*(B==2)*(C==2)*2+
-                (A==3)*(B==3)*(C==3)*3"
+               
+               paste0(data0dir, "tmp_mask_exclusion.tif"),
+               
+               paste0(data0dir, "tmp_suitability_map.tif"),
+               
+               "(1-M)*((A+B+C)*1+
+                (E+F+G+H)*2+
+                (I+J+K+L)*3)"
+))
+
+
+
+
+####################  CREATE A PSEUDO COLOR TABLE
+
+colfunc <- colorRampPalette(c("green", "red"))
+cols    <- col2rgb(c("black",colfunc(47)))
+
+# cols <- col2rgb(c("black","beige","yellow","orange","red","darkred","palegreen","green2","forestgreen",'darkgreen'))
+pct <- data.frame(cbind(c(0,23:69),
+                        cols[1,],
+                        cols[2,],
+                        cols[3,]
+))
+
+write.table(pct,paste0(data0dir,'color_table.txt'),row.names = F,col.names = F,quote = F)
+
+################################################################################
+## Add pseudo color table to result
+system(sprintf("(echo %s) | oft-addpct.py %s %s",
+               paste0(data0dir,'color_table.txt'),
+               paste0(data0dir, "tmp_suitability_map.tif"),
+               paste0(data0dir, "tmp_suitability_map_pct.tif")
+))
+
+## Compress final result
+system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
+               paste0(data0dir, "tmp_suitability_map_pct.tif"),
+               output
 ))
 
 

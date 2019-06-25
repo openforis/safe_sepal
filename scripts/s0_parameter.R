@@ -1,8 +1,15 @@
+# +000 PARAMETERS FOR 
 # +001 INSTALLATION OF THE PACKAGES
 # +002 SET WORKING ENVIRONMENT 
 # +003 CREATING OBJECTS ON R
 # +004 CREATING FOLDERS ON THE COMPUTER
 rm(list=ls())
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +001 INSTALLATION OF THE PACKAGES
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+countrycode <- "NER"
+proj_ea     <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +001 INSTALLATION OF THE PACKAGES
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -52,11 +59,13 @@ tmpdir    <- paste0(rootdir,"tmp/")
 admdir    <- paste0(rootdir,"data_in/adm/")
 lulcdir   <- paste0(rootdir,"data_in/lu-lc/")
 biomassdir<- paste0(rootdir,"data_in/biomass/")
+
 gfcdir    <- paste0(biomassdir,"gfc/")
+
 waterdir  <- paste0(rootdir,"data_in/water/")
 denspopdir<- paste0(rootdir,"data_in/denspop/")
-roadsdir  <- paste0(rootdir, "data_in/roads/Roads/")
-twnsdir   <- paste0(rootdir, "data_in/towns/")
+roadsdir  <- paste0(rootdir,"data_in/roads/Roads/")
+twnsdir   <- paste0(rootdir,"data_in/towns/")
 srtmdir   <- paste0(rootdir,"data_in/srtm/") 
 elecdir   <- paste0(rootdir,"data_in/electricity/")
 
