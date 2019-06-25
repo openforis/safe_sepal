@@ -12,7 +12,7 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s  --co=\"COMPRESS=LZW\
                "((A==1)+(B>20)+(C==1)+(D==1))>0"
 ))
 
-system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s -L %s -M % --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s   --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                paste0(data0dir,"score_surf_water.tif"),
                paste0(data0dir,"score_under_water.tif"),
                paste0(data0dir,"score_preci.tif"),
@@ -27,13 +27,13 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I 
                paste0(data0dir,"score_health.tif"),
                paste0(data0dir,"score_education.tif"),
                
-               paste0(data0dir, "tmp_mask_exclusion.tif"),
+               #paste0(data0dir, "tmp_mask_exclusion.tif"),
                
                paste0(data0dir, "tmp_suitability_map.tif"),
                
-               "(1-M)*((A+B+C)*1+
-                (E+F+G+H)*2+
-                (I+J+K+L)*3)"
+               "((A+B+C)*1+
+                (D+E+F+G)*2+
+                (H+I+J+K)*3)"
 ))
 
 
@@ -53,11 +53,18 @@ pct <- data.frame(cbind(c(0,23:69),
 
 write.table(pct,paste0(data0dir,'color_table.txt'),row.names = F,col.names = F,quote = F)
 
+## Compress final result
+system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
+               paste0(data0dir, "tmp_suitability_map.tif"),
+               paste0(data0dir, "tmp_suitability_map_byte.tif")
+))
+
+
 ################################################################################
 ## Add pseudo color table to result
 system(sprintf("(echo %s) | oft-addpct.py %s %s",
                paste0(data0dir,'color_table.txt'),
-               paste0(data0dir, "tmp_suitability_map.tif"),
+               paste0(data0dir, "tmp_suitability_map_byte.tif"),
                paste0(data0dir, "tmp_suitability_map_pct.tif")
 ))
 

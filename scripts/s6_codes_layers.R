@@ -92,7 +92,7 @@ output <- paste0(data0dir,"score_roads.tif")
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
-               "(A>=0)*(A<=1000/30)*1+(A>1000/30)*(A<=5000/30)*2+(A>5000/30)*3"
+               "(A<=1000/30)*1+(A>1000/30)*(A<=5000/30)*2+(A>5000/30)*3"
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
