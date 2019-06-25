@@ -1,5 +1,11 @@
-### Module for SAFE inside SEPAL
+MODULE FOR SAFE INSIDE SEPAL
+=====
 
+SAFE is ....
+SEPAL is ....
+
+Background
+----------
 Some background elements
 
 
