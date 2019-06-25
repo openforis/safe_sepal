@@ -2,17 +2,16 @@
 
 output  <- paste0(data0dir, "suitability_map.tif")
 
-system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s  --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"military.tif"),
+system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               paste0(data0dir,"unsuit_land.tif"),
+               paste0(data0dir,"unsuit_wetland.tif"),
                paste0(data0dir,"slope.tif"),
-               paste0(data0dir,"wetlands.tif"),
-               paste0(data0dir,"reserves.tif"),
                
                paste0(data0dir, "tmp_mask_exclusion.tif"),
-               "((A==1)+(B>20)+(C==1)+(D==1))>0"
+               "((A==1)+(B==1)+(C>20))>0"
 ))
 
-system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s   --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s -L %s  --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                paste0(data0dir,"score_surf_water.tif"),
                paste0(data0dir,"score_under_water.tif"),
                paste0(data0dir,"score_preci.tif"),
@@ -27,17 +26,14 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I 
                paste0(data0dir,"score_health.tif"),
                paste0(data0dir,"score_education.tif"),
                
-               #paste0(data0dir, "tmp_mask_exclusion.tif"),
+               paste0(data0dir, "tmp_mask_exclusion.tif"),
                
                paste0(data0dir, "tmp_suitability_map.tif"),
                
-               "((A+B+C)*1+
+               "(1-L)*((A+B+C)*1+
                 (D+E+F+G)*2+
                 (H+I+J+K)*3)"
 ))
-
-
-
 
 ####################  CREATE A PSEUDO COLOR TABLE
 
