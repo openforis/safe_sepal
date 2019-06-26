@@ -1,5 +1,9 @@
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +000 OUTPUTS
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-mask <- raster(paste0(griddir,"mask.tif"))
+mask_name <- paste0(griddir,"mask.tif")
 plot(mask)
+
+system(sprintf("rm -r -f %s",
+               paste0(data0dir,"tmp*.tif")
+               ))

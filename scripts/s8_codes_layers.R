@@ -4,12 +4,12 @@
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## DISTANCE TO SURFACE WATER 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- paste0(data0dir,"dist2surf_water.tif")
-output <- paste0(data0dir,"score_surf_water.tif")
+dist_surf_water  <- paste0(data0dir,"dist2surf_water.tif")
+score_surf_water <- paste0(data0dir,"score_surf_water.tif")
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
+               dist_surf_water,
+               score_surf_water,
                "(A<500/30)*1+(A>=500/30)*(A<=1000/30)*2+(A>1000/30)*3"
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
