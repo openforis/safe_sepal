@@ -1,6 +1,6 @@
 MODULE FOR SAFE INSIDE SEPAL
 =====
-Alos
+
 [SAFE](http://www.fao.org/resilience/resources/resources-detail/en/c/1154965/) or Safe Access to Fuel and Energy is an initiative of the Food and Agriculture organisation of the United Nations (FAO) to address energy needs during emergencies and protracted crises, and to build resilient livelihoods in a sustainable manner.
 
 [SEPAL](http://www.openforis.org/tools/sepal.html) is a cloud computing platform for geographical data processing. It enables users to quickly process large amount of data without high network bandwidth requirements or need to invest in high-performance computing infrastructure.
