@@ -48,6 +48,7 @@ data0dir  <- paste0(rootdir,"data0/")
 tmpdir    <- paste0(rootdir,"tmp/")
 
 lulcdir   <- paste0(rootdir,"data_in/lu-lc/")
+admdir    <- paste0(rootdir,"data_in/adm/")
 biomassdir<- paste0(rootdir,"data_in/biomass/")
 waterdir  <- paste0(rootdir,"data_in/water/")
 srtmdir   <- paste0(rootdir,"data_in/srtm/") 
@@ -67,5 +68,7 @@ dir.create(biomassdir,showWarnings = F)
 dir.create(waterdir,showWarnings = F)
 dir.create(srtmdir,showWarnings = F)
 dir.create(elecdir,showWarnings = F)
+dir.create(admdir,showWarnings = F)
+
 
 setwd(dataindir)

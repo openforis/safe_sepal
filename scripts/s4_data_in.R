@@ -77,7 +77,7 @@ levels(as.factor(water_pois$fclass))
 #0 is NODATA
 water_pois$water_code                                                 <-0
 #1 is drinkig water
-water_pois$water_code[which(grepl("drinkig water",water_pois$fclass))]<-1
+water_pois$water_code[which(grepl("drinking_water",water_pois$fclass))]<-1
 #2 is water_tower
 water_pois$water_code[which(grepl("water_tower",water_pois$fclass))]  <-2
 #3 is water_well
@@ -85,14 +85,14 @@ water_pois$water_code[which(grepl("water_well",water_pois$fclass))]   <-3
 #4 is water_works
 water_pois$water_code[which(grepl("water_works",water_pois$fclass))]  <-4
 
-water_pois_only <- water_pois[water_pois$water_code !=0,]
-head(water_pois_only)
+# water_pois_only <- water_pois[water_pois$water_code !=0,]
+table(water_pois$water_code)
 
 ## REPROJECT
-water_pois_only_ea<-spTransform(water_pois_only, crs(mask))
-plot(water_pois_only_ea)
+water_pois_ea<-spTransform(water_pois, crs(mask))
+plot(water_pois_ea)
 plot(aoi_ea,add=T)
-writeOGR(water_pois_only_ea, paste0(data0dir, "water_pois_osm.shp"), layer= "water_pois_osm.shp", driver='ESRI Shapefile', overwrite=T)
+writeOGR(water_pois_ea, paste0(data0dir, "water_pois_osm.shp"), layer= "water_pois_osm.shp", driver='ESRI Shapefile', overwrite=T)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 1-2/ WATER "OSM" - OpenStreetMap

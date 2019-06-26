@@ -20,7 +20,8 @@ plot(aoi)
 aoi_ea   <-spTransform(aoi, proj_ea)
 plot(aoi_ea)
 aoi_ea@bbox
-extent(aoi_ea)
+(extent(aoi_ea)@xmax - extent(aoi_ea)@xmin)/30
+(extent(aoi_ea)@ymax - extent(aoi_ea)@ymin)/30
 
 ## CREATE SHAPEFILE
 aoi_ea$code <- row(aoi_ea)[,1]

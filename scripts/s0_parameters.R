@@ -26,7 +26,7 @@ res0        <- 30
 
 url_osm         <- "http://download.geofabrik.de/africa/niger-latest-free.shp.zip"
 file_osm        <- "niger-latest-free.shp.zip"
-
+"blablabla"
 ## GET ELECTRICITY GRID DATA 
 url_elec            <- "https://development-data-hub-s3-public.s3.amazonaws.com/ddhfiles/145469/330132663320kvlinesniger.zip"
 file_elec           <- "330132663320kvlinesniger.zip"
