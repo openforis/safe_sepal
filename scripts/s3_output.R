@@ -7,3 +7,4 @@ plot(mask)
 system(sprintf("rm -r -f %s",
                paste0(data0dir,"tmp*.tif")
                ))
+
