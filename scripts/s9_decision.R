@@ -75,3 +75,9 @@ system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
 ## SURFACE MINIMALE /PERS
 # calculer le nombre de pixels minimums à prendre en compte pour un nombre minimum de personne:
 # 3.5m² / pers and 4.5m² / pers in cold climates
+
+## REMOVE "tmp_" FILES
+system(sprintf("rm -r -f %s",
+               paste0(data0dir,"tmp*.tif")
+))
+

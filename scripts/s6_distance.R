@@ -6,20 +6,20 @@
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # FOCUS ON YOUR AOI : * mask
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"border.tif") ,
-               paste0(griddir,"mask.tif") ,
-               paste0(data0dir,"tmp_mask_border.tif"),
+               boundaries_tif,
+               mask_path,
+               tmp_mask_boundaries,
                "A*(B>0)"
 ))
 # COMPUTE DISTANCES TO FEATURES
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_border.tif"),
-               paste0(data0dir,"tmp_mask_dist2border.tif")
+               tmp_mask_boundaries,
+               tmp_mask_dist2boundaries
 ))
 # COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_dist2border.tif"),
-               paste0(data0dir,"dist2border.tif")
+               tmp_mask_dist2boundaries,
+               dist2boundaries
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  WATER RESOURCES 
@@ -28,46 +28,45 @@ system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
 # SURFACE WATER  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"surf_water.tif") ,
-               paste0(griddir,"mask.tif") ,
-               paste0(data0dir,"tmp_mask_surf_water.tif"),
+               surf_water_tif,
+               mask_path,
+               tmp_mask_surf_water,
                "A*(B>0)"
 ))
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_surf_water.tif"),#source file
-               paste0(data0dir,"mask_dist2surf_water.tif") #destination file
+               tmp_mask_surf_water,
+               tmp_mask_dist2surf_water 
 ))
 # COMPRESS
-# 5.3 GB -> 4.4 GB
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"mask_dist2surf_water.tif"),
-               paste0(data0dir,"dist2surf_water.tif")
+               tmp_mask_dist2surf_water,
+               dist2surf_water
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # UNDERGROUND WATER  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"under_water.tif") ,
-               paste0(griddir,"mask.tif") ,
-               paste0(data0dir,"tmp_mask_under_water.tif"),
+               under_water_tif,
+               mask_path,
+               tmp_mask_under_water,
                "A*(B>0)"
 ))
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_under_water.tif"),
-               paste0(data0dir,"tmp_mask_dist2under_water.tif")
+               tmp_mask_under_water,
+               tmp_mask_dist2under_water
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_dist2under_water.tif"),
-               paste0(data0dir,"dist2under_water.tif")
+               tmp_mask_dist2under_water,
+               dist2under_water
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # WATER RESOURCES COMPILATION 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"dist2surf_water.tif"),
-               paste0(data0dir,"dist2under_water.tif"),
-               paste0(data0dir,"dist2water.tif"),
+               dist2surf_water,
+               dist2under_water,
+               dist2water,
                "A*B"
 ))
 
@@ -75,105 +74,105 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
 ##  ELECTRIC LINES 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"electricity.tif") ,
-               paste0(griddir,"mask.tif") ,
-               paste0(data0dir,"tmp_mask_electricity.tif"),
+               electricity_tif,
+               mask_path,
+               tmp_mask_electricity,
                "A*(B>0)"
 ))
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_electricity.tif"),
-               paste0(data0dir,"tmp_mask_dist2electricity.tif")
+               tmp_mask_electricity,
+               tmp_mask_dist2electricity
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_dist2electricity.tif"),
-               paste0(data0dir,"dist2electricity.tif")
+               tmp_mask_dist2electricity,
+               dist2electricity
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  ROADS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"roads.tif") ,
-               paste0(griddir,"mask.tif") ,
-               paste0(data0dir,"tmp_mask_roads.tif"),
+               roads_tif,
+               mask_path,
+               tmp_mask_roads,
                "A*(B>0)"
 ))
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_roads.tif"),
-               paste0(data0dir,"tmp_mask_dist2roads.tif")
+               tmp_mask_roads,
+               tmp_mask_dist2roads
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_dist2roads.tif"),
-               paste0(data0dir,"dist2roads.tif")
+               tmp_mask_dist2roads,
+               dist2roads
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  SETTLEMENTS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"towns.tif") ,
-               paste0(griddir,"mask.tif") ,
-               paste0(data0dir,"tmp_mask_towns.tif"),
+               towns_tif,
+               mask_path,
+               tmp_mask_towns,
                "A*(B>0)"
 ))
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_towns.tif"),
-               paste0(data0dir,"tmp_mask_dist2towns.tif")
+               tmp_mask_towns,
+               tmp_mask_dist2towns
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_dist2towns.tif"),
-               paste0(data0dir,"dist2towns.tif")
+               tmp_mask_dist2towns,
+               dist2towns 
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  HEALTH 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"health.tif") ,
-               paste0(griddir,"mask.tif") ,
-               paste0(data0dir,"tmp_mask_health.tif"),
+               health_tif,
+               mask_path,
+               tmp_mask_health,
                "A*(B>0)"
 ))
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_health.tif"),
-               paste0(data0dir,"tmp_mask_dist2health.tif")
+               tmp_mask_health,
+               tmp_mask_dist2health
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_dist2health.tif"),
-               paste0(data0dir,"dist2health.tif")
+               tmp_mask_dist2health,
+               dist2health
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  EDUCATION 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"education.tif") ,
-               paste0(griddir,"mask.tif") ,
-               paste0(data0dir,"tmp_mask_education.tif"),
+               education_tif,
+               mask_path,
+               tmp_mask_education,
                "A*(B>0)"
 ))
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_education.tif"),
-               paste0(data0dir,"tmp_mask_dist2education.tif")
+               tmp_mask_education,
+               tmp_mask_dist2education
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_dist2education.tif"),
-               paste0(data0dir,"dist2education.tif")
+               tmp_mask_dist2education,
+               dist2education
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  BIOMASS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"biomass_geosahel2018.tif"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir,"tmp_mask_biomass_geosahel2018.tif"),
+               biomass_tif ,
+               mask_path,
+               tmp_mask_biomass,
                "A*(B>0)"
 ))
 system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_biomass_geosahel2018.tif"),
-               paste0(data0dir,"tmp_mask_dist2biomass_geosahel2018.tif")
+               tmp_mask_biomass,
+               tmp_mask_dist2biomass
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               paste0(data0dir,"tmp_mask_dist2biomass_geosahel2018.tif"),
-               paste0(data0dir,"dist2biomass_geosahel2018.tif")
+               tmp_mask_dist2biomass,
+               dist2biomass
 ))
-plot(raster(paste0(data0dir,"dist2biomass_geosahel2018.tif")))
+

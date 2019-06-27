@@ -1,23 +1,22 @@
 # +000 RASTERIZE LAYERS
-# +++1 FROM SHAEPFILES TO RASTERS
+# +++1 SHAPEFILES TO RASTERS
 # +++2 ALIGN RASTERS TO MASK
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++1 SHAPEFILES TO RASTERS
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BORDERS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-border  <- readOGR(paste0(griddir,"boundaries_level0.shp"))
-head(border)
-
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(griddir,"boundaries_level0.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "border.tif"),
+               boundaries_path,
+               mask_path,
+               boundaries_tif,
                "code"
 ))
-plot(raster(paste0(data0dir, "border.tif")))
-gdalinfo(paste0(data0dir,"border.tif"))
+plot(raster(boundaries_tif))
+gdalinfo(boundaries_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## WATER RESOURCES 
@@ -25,70 +24,58 @@ gdalinfo(paste0(data0dir,"border.tif"))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## -1/ WATER "POIS" - Points of interest, OpenStreetMap 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-water_pois_osm  <- readOGR(paste0(data0dir,"water_pois_osm.shp"))
-head(water_pois_osm)
 
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"water_pois_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "water_pois.tif"),
+               water_pois_osm_path,
+               mask_path,
+               water_pois_osm_tif,
                "water_code"
 ))
-plot(raster(paste0(data0dir, "water_pois.tif")))
-gdalinfo(paste0(data0dir,"water_pois.tif"))
+plot(raster(water_pois_osm_tif))
+gdalinfo(water_pois_osm_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## -2/ WATER "OSM" - OpenStreetMap  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-water_osm             <- readOGR(paste0(data0dir,"water_osm.shp"))
-head(water_osm)
 
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"water_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "water.tif"),
+               water_osm_path,
+               mask_path,
+               water_osm_tif,
                "water_code"
 ))
-plot(raster(paste0(data0dir, "water.tif")))
-gdalinfo(paste0(data0dir,"water.tif"))
+plot(raster(water_osm_tif))
+gdalinfo(water_osm_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## -3/ WATERWAYS "OSM" - OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-waterways_osm    <- readOGR(paste0(data0dir, "waterways_osm.shp"))
-head(waterways_osm)
 
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"waterways_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "waterways.tif"),
+               waterways_osm_path,
+               mask_path,
+               waterways_osm_tif,
                "wtrwys_"
 ))
-plot(raster(paste0(data0dir, "waterways.tif")))
-gdalinfo(paste0(data0dir,"waterways.tif"))
+plot(raster(waterways_osm_tif))
+gdalinfo(waterways_osm_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## -4/ WATER "NATURAL OSM" - OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-water_natural_osm             <- readOGR(paste0(data0dir,"water_natural_osm.shp"))
-head(water_natural_osm)
 
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"water_natural_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "water_natural.tif"),
+               water_natural_osm_path,
+               mask_path,
+               water_natural_osm_tif,
                "water_code"
 ))
-plot(raster(paste0(data0dir, "water_natural.tif")))
-gdalinfo(paste0(data0dir,"water_natural.tif"))
+plot(raster(water_natural_osm_tif))
+gdalinfo(water_natural_osm_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## WATER RESSOURCES - COMPILATION 
@@ -96,141 +83,107 @@ gdalinfo(paste0(data0dir,"water_natural.tif"))
 
 # SURFACE WATER = 1, other =0 
 system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"water_pois.tif"),
-               paste0(data0dir,"water.tif"),
-               paste0(data0dir,"waterways.tif"),
-               paste0(data0dir,"surf_water.tif"),
+               water_pois_osm_tif,
+               water_osm_tif,
+               waterways_osm_tif,
+               surf_water_tif,
                "((A==1)+(A==2)+(A==4)+(B>0)+(C>0))*1"
 ))
-GDALinfo(paste0(data0dir,"surf_water.tif"))
-plot(raster(paste0(data0dir, "surf_water.tif")))
+plot(raster(GDALinfo(surf_water_tif)))
+GDALinfo(surf_water_tif)
 
 # UNDERGROUND WATER = 1, other =0
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"water_pois.tif"),
-               paste0(data0dir,"water_natural.tif"),
-               paste0(data0dir,"under_water.tif"),
+               water_pois_osm_tif,
+               water_natural_osm_tif,
+               under_water_tif,
                "((A==3)+(B==1))*1"
 ))
-GDALinfo(paste0(data0dir,"under_water.tif"))
-plot(raster(paste0(data0dir, "under_water.tif")))
+plot(raster(GDALinfo(under_water_tif)))
+GDALinfo(under_water_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## ELECTRIC LINES 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-electricity             <- readOGR(paste0(data0dir,"electricity.shp"))
-head(electricity)
 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"electricity.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "electricity.tif"),
+               electricity_path,
+               mask_path,
+               electricity_tif,
                "stts_cd "
 ))
-plot(raster(paste0(data0dir, "electricity.tif")))
-gdalinfo(paste0(data0dir,"electricity.tif"))
+plot(raster(electricity_tif))
+gdalinfo(electricity_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## ROADS  "roads OSM" - OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-roads_osm      <- readOGR(paste0(data0dir, "roads_osm.shp"))
-head(roads_osm)
 
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"roads_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "roads.tif"),
+               roads_path,
+               mask_path,
+               roads_tif,
                "roads_code"
 ))
-plot(raster(paste0(data0dir, "roads.tif")))
-gdalinfo(paste0(data0dir,"roads.tif"))
+plot(raster(roads_tif))
+gdalinfo(roads_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## RELIGION "POFW OSM" - Places of worship OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-pofw    <- readOGR(paste0(data0dir, "religion_osm.shp"))
-head(pofw)
 
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir, "religion_osm.shp"),
-               paste0(griddir, "mask.tif"),
-               paste0(data0dir, "religion.tif"),
+               religion_path,
+               mask_path,
+               religion_tif,
                "rlgn_cd"
 ))
-plot(raster(paste0(data0dir, "religion.tif")))
-gdalinfo(paste0(data0dir, "religion.tif"))
+plot(raster(religion_tif))
+gdalinfo(religion_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## SETTLEMENTS - "places OSM" OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-towns_osm        <- readOGR(paste0(data0dir, "towns_osm.shp"))
-head(towns_osm)
 
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"towns_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "towns.tif"),
+               towns_path,
+               mask_path,
+               towns_tif,
                "towns_code"
 ))
-plot(raster(paste0(data0dir, "towns.tif")))
-
+plot(raster(towns_tif))
+gdalinfo(towns_tif)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## HEALTH  - "Points of interest OSM" OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-health_osm     <- readOGR(paste0(data0dir,"health_osm.shp"))
-head(health_osm)
 
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"health_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "health.tif"),
+               health_path,
+               mask_path,
+               health_tif,
                "hlth_cd"
 ))
-plot(raster(paste0(data0dir, "health.tif")))
-gdalinfo(paste0(data0dir,"health.tif"))
+plot(raster(health_tif))
+gdalinfo(health_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## EDUCATION - "Points of interestOSM" OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-edu_osm        <- readOGR(paste0(data0dir,"education_osm.shp"))
-head(edu_osm)
 
-## RASTERIZE 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"education_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir,"education.tif"),
+               education_path,
+               mask_path,
+               education_tif,
                "edctn_c"
 ))
-plot(raster(paste0(data0dir, "education.tif")))
-gdalinfo(paste0(data0dir,"education.tif"))
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## OPEN HABITAT  - "Land Use OSM" OpenStreetMap
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-openareas_osm      <- readOGR(paste0(data0dir,"openareas_osm.shp"))
-head(openareas_osm)
-
-## RASTERIZE 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
-               scriptdir,
-               paste0(data0dir,"openareas_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "openareas.tif"),
-               "open_code"
-))
-plot(raster(paste0(data0dir, "openareas.tif")))
-gdalinfo(paste0(data0dir,"openareas.tif"))
+plot(raster(education_tif))
+gdalinfo(education_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## UNSUITABLE AREAS 
@@ -238,35 +191,29 @@ gdalinfo(paste0(data0dir,"openareas.tif"))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## -1/ UNSUITABLE LAND - "Land Use OSM" OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-unsuit_land_osm           <- readOGR(paste0(data0dir,"unsuit_land_osm.shp"))
-head(unsuit_land_osm)
-
-## RASTERIZE 
+ 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"unsuit_land_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "unsuit_land.tif"),
+               unsuit_land_path,
+               mask_path,
+               unsuit_land_tif,
                "unst_cd"
 ))
-plot(raster(paste0(data0dir, "unsuit_land.tif")))
-gdalinfo(paste0(data0dir,"unsuit_land.tif"))
+plot(raster(unsuit_land_tif))
+gdalinfo(unsuit_land_tif)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## -2/ UNSUITABLE-WATER - "OSM" - OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-wetland_osm             <- readOGR(paste0(data0dir,"unsuit_wetland_osm.shp"))
-head(wetland_osm)
-
-## RASTERIZE 
+ 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               paste0(data0dir,"unsuit_wetland_osm.shp"),
-               paste0(griddir,"mask.tif"),
-               paste0(data0dir, "unsuit_wetland.tif"),
+               unsuit_wetland_path,
+               mask_path,
+               unsuit_wetland_tif,
                "water_code"
 ))
-plot(raster(paste0(data0dir, "unsuit_wetland.tif")))
-gdalinfo(paste0(data0dir,"unsuit_wetland.tif"))
+plot(raster(unsuit_wetland_tif))
+gdalinfo(unsuit_wetland_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## UNSUITABLE - COMPILATION
@@ -274,31 +221,21 @@ gdalinfo(paste0(data0dir,"unsuit_wetland.tif"))
 
 # RASTER : unsuitable = 1, other =0 
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"unsuit_land.tif"),
-               paste0(data0dir,"unsuit_wetland.tif"),
-               paste0(data0dir,"unsuitable.tif"),
+               unsuit_land_tif,
+               unsuit_wetland_tif,
+               unsuit_tif,
                "((A>0)+(B>0))*1"
 ))
 
-GDALinfo(paste0(data0dir,"unsuitable.tif"))
-plot(raster(paste0(data0dir, "unsuitable.tif")))
+plot(raster(unsuit_tif))
+GDALinfo(unsuit_tif)
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++2 ALIGN RASTERS TO MASK
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## SRTM
-# Get more info on Niger: https://eros.usgs.gov/westafrica/ecoregions-and-topography/ecoregions-and-topography-niger
+## SRTM 90m
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# SRTM 90m 
-srtm01 <- getData('SRTM',lon=0,lat=15, path = srtmdir)
-srtm11 <- getData('SRTM',lon=5,lat=15, path = srtmdir)
-srtm21 <- getData('SRTM',lon=10,lat=15, path = srtmdir)
-srtm02 <- getData('SRTM',lon=0,lat=20, path = srtmdir)
-srtm12 <- getData('SRTM',lon=5,lat=20, path = srtmdir)
-srtm22 <- getData('SRTM',lon=10,lat=20, path = srtmdir)
-srtm32 <- getData('SRTM',lon=15,lat=20, path = srtmdir)
-srtm13 <- getData('SRTM',lon=5,lat=25, path = srtmdir)
-srtm23 <- getData('SRTM',lon=10,lat=25, path = srtmdir)
-srtm33 <- getData('SRTM',lon=15,lat=25, path = srtmdir)
-
 srtm   <- list.files(
                      path=srtmdir,
                      pattern=glob2rx("srtm*.tif"),
@@ -306,150 +243,143 @@ srtm   <- list.files(
                      recursive=FALSE)
 file <- srtm
 file
-# MERGE INTO .tif
+# MERGE ALL INTO ONE (1) .tif
 system(sprintf("gdal_merge.py -o %s -v  %s",
-               paste0(srtmdir, "tmp_srtm.tif"),
+               tmp_srtm_path,
                paste0(file,collapse= " ")
 ))
 # COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
-               paste0(srtmdir,"tmp_srtm.tif"),
-               paste0(srtmdir,"tmp_comp_srtm.tif")
+               tmp_srtm_path,
+               tmp_srtm_comp_path
 ))
-plot(raster(paste0(srtmdir,"tmp_comp_srtm.tif")))
+plot(raster(tmp_srtm_comp_path))
 plot(aoi,add=T)
 
 # DEFINE MASK TO ALIGN ON
-mask   <- raster(paste0(griddir,"mask.tif"))
-proj   <- proj4string(raster(mask))
-extent <- extent(raster(mask))
-res    <- res(raster(mask))[1]
+mask   
+proj   <- proj4string(mask)
+extent <- extent(mask)
+res    <- res(mask)[1]
 
 # DEFINE INPUT AND OUTPUT
-input  <- paste0(srtmdir,"tmp_comp_srtm.tif")
-ouput  <- paste0(data0dir,"srtm.tif")
+input  <- tmp_srtm_comp_path
+ouput  <- srtm_path 
 
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
-               proj4string(raster(mask)),
-               extent(raster(mask))@xmin,
-               extent(raster(mask))@ymin,
-               extent(raster(mask))@xmax,
-               extent(raster(mask))@ymax,
-               res(raster(mask))[1],
-               res(raster(mask))[2],
+               proj4string(mask),
+               extent(mask)@xmin,
+               extent(mask)@ymin,
+               extent(mask)@xmax,
+               extent(mask)@ymax,
+               res(mask)[1],
+               res(mask)[2],
                input,
                ouput
 ))
 # COMPUTE ELEVATION
 system(sprintf("gdaldem hillshade -co COMPRESS=LZW %s %s",
-               paste0(data0dir,"srtm.tif"),
-               paste0(data0dir,"elevation.tif")
+               srtm_path,
+               elevation_path
+               
 ))
-
 # COMPUTE SLOPE
 system(sprintf("gdaldem slope -co COMPRESS=LZW -p %s %s",
-               paste0(data0dir,"srtm.tif"),
-               paste0(data0dir,"slope.tif")
+               srtm_path,
+               slope_path
 ))
-
 # COMPUTE ASPECT
 system(sprintf("gdaldem aspect -co COMPRESS=LZW %s %s",
-               paste0(data0dir,"srtm.tif"),
-               paste0(data0dir,"aspect.tif")
+               srtm_path,
+               aspect_path
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BIOMASS - GEOSAHEL - VALUES 2018
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # http://sigsahel.info/ -> http://geosahel.info/Viewer.aspx?map=Analyse-Biomasse-Finale#
-
-biomass         <- paste0(biomassdir,"BiomassValue2018_geosahel.tif") 
-
 # COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
-               biomass,
-               paste0(biomassdir,"tmp_comp_biomass_geosahel2018.tif")
+               biomass_path,
+               tmp_biomass_comp
 ))
 
 # DEFINE MASK TO ALIGN ON
-mask   <- raster(paste0(griddir,"mask.tif"))
-proj   <- proj4string(raster(mask))
-extent <- extent(raster(mask))
-res    <- res(raster(mask))[1]
+mask   
+proj   <- proj4string(mask)
+extent <- extent(mask)
+res    <- res(mask)[1]
 
 # DEFINE INPUT AND OUTPUT
-input  <- paste0(biomassdir,"tmp_comp_biomass_geosahel2018.tif")
-ouput  <- paste0(data0dir,"biomass_geosahel2018.tif")
+input  <- tmp_biomass_comp
+ouput  <- biomass_tif
 
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
-               proj4string(raster(mask)),
-               extent(raster(mask))@xmin,
-               extent(raster(mask))@ymin,
-               extent(raster(mask))@xmax,
-               extent(raster(mask))@ymax,
-               res(raster(mask))[1],
-               res(raster(mask))[2],
+               proj4string(mask),
+               extent(mask)@xmin,
+               extent(mask)@ymin,
+               extent(mask)@xmax,
+               extent(mask)@ymax,
+               res(mask)[1],
+               res(mask)[2],
                input,
                ouput
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## PRECIPITATIONS - WAPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-preci         <- paste0(waterdir,"L1_PCP_18_clipped.tif") 
-
+# COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
-               preci,
-               paste0(waterdir,"tmp_comp_L1_PCP_18_clipped.tif")
+               preci_path,
+               tmp_preci_comp
 ))
-
 # DEFINE MASK TO ALIGN ON
-mask   <- raster(paste0(griddir,"mask.tif"))
-proj   <- proj4string(raster(mask))
-extent <- extent(raster(mask))
-res    <- res(raster(mask))[1]
+mask   
+proj   <- proj4string(mask)
+extent <- extent(mask)
+res    <- res(mask)[1]
 
 # DEFINE INPUT AND OUTPUT
-input  <- paste0(waterdir,"tmp_comp_L1_PCP_18_clipped.tif")
-ouput  <- paste0(data0dir,"preci_wapor_2018.tif")
+input  <- tmp_preci_comp
+ouput  <- preci_tif
 
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
-               proj4string(raster(mask)),
-               extent(raster(mask))@xmin,
-               extent(raster(mask))@ymin,
-               extent(raster(mask))@xmax,
-               extent(raster(mask))@ymax,
-               res(raster(mask))[1],
-               res(raster(mask))[2],
+               proj4string(mask),
+               extent(mask)@xmin,
+               extent(mask)@ymin,
+               extent(mask)@xmax,
+               extent(mask)@ymax,
+               res(mask)[1],
+               res(mask)[2],
                input,
                ouput
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## LANDCOVER - WAPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-lc         <- paste0(lulcdir,"L1_LCC_15_clipped.tif") 
-
+# COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
-               lc,
-               paste0(lulcdir,"tmp_comp_L1_LCC_15_clipped.tif")
+               lc_path,
+               tmp_lc_comp
 ))
 
 # DEFINE MASK TO ALIGN ON
-mask   <- raster(paste0(griddir,"mask.tif"))
-proj   <- proj4string(raster(mask))
-extent <- extent(raster(mask))
-res    <- res(raster(mask))[1]
+mask   
+proj   <- proj4string(mask)
+extent <- extent(mask)
+res    <- res(mask)[1]
 
 # DEFINE INPUT AND OUTPUT
-input  <- paste0(lulcdir,"tmp_comp_L1_LCC_15_clipped.tif")
-ouput  <- paste0(data0dir,"lc_wapor_2015.tif")
+input  <- tmp_lc_comp
+ouput  <- lc_tif
 
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
-               proj4string(raster(mask)),
-               extent(raster(mask))@xmin,
-               extent(raster(mask))@ymin,
-               extent(raster(mask))@xmax,
-               extent(raster(mask))@ymax,
-               res(raster(mask))[1],
-               res(raster(mask))[2],
+               proj4string(mask),
+               extent(mask)@xmin,
+               extent(mask)@ymin,
+               extent(mask)@xmax,
+               extent(mask)@ymax,
+               res(mask)[1],
+               res(mask)[2],
                input,
                ouput
 ))

@@ -5,6 +5,9 @@
 # +++4 GET OSM DATA
 
 rm(list=ls())
+#Do you need 8bits, 16bits, 32bits?
+#(extent(aoi_ea)@xmax - extent(aoi_ea)@xmin)/30
+#(extent(aoi_ea)@ymax - extent(aoi_ea)@ymin)/30
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +000 PARAMETERS FOR YOUR AOI
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -26,7 +29,24 @@ res0        <- 30
 
 url_osm         <- "http://download.geofabrik.de/africa/niger-latest-free.shp.zip"
 file_osm        <- "niger-latest-free.shp.zip"
-"blablabla"
+
 ## GET ELECTRICITY GRID DATA 
+#s4_data_in.R, line 39, you need to ask R to read the shapefile and head() to see what's inside the shapefile so not automatic
 url_elec            <- "https://development-data-hub-s3-public.s3.amazonaws.com/ddhfiles/145469/330132663320kvlinesniger.zip"
 file_elec           <- "330132663320kvlinesniger.zip"
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## SRTM
+# Get more info on Niger: https://eros.usgs.gov/westafrica/ecoregions-and-topography/ecoregions-and-topography-niger
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# SRTM 90m 
+srtm01 <- getData('SRTM',lon=0,lat=15, path = srtmdir)
+srtm11 <- getData('SRTM',lon=5,lat=15, path = srtmdir)
+srtm21 <- getData('SRTM',lon=10,lat=15, path = srtmdir)
+srtm02 <- getData('SRTM',lon=0,lat=20, path = srtmdir)
+srtm12 <- getData('SRTM',lon=5,lat=20, path = srtmdir)
+srtm22 <- getData('SRTM',lon=10,lat=20, path = srtmdir)
+srtm32 <- getData('SRTM',lon=15,lat=20, path = srtmdir)
+srtm13 <- getData('SRTM',lon=5,lat=25, path = srtmdir)
+srtm23 <- getData('SRTM',lon=10,lat=25, path = srtmdir)
+srtm33 <- getData('SRTM',lon=15,lat=25, path = srtmdir)

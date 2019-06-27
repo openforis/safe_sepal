@@ -20,6 +20,16 @@ Some background elements
 ----------
 The scripts you will find on this platform will enable you to download OpenStreetMap [data](http://download.geofabrik.de/) rapidly for your area of interest(AOI) and get a first idea of geographic features of the landscape.
 For more [details](http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf)
+
+One illustration of surface water
+![Alt text](/docs/images/bfast.jpeg?raw=true)
+
+![surface water](imagesdir/dist2surf_water.png)
+
+One illustration of underground water
+![underground water](imagesdir/dist2_under_water.png)
+
+
 -surface water: drinking water, water_towers, water_works, water, reservoir, river, stream, canal, drain
 
 -underground water: water_wells and springs
@@ -37,7 +47,5 @@ For more [details](http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 -unsuitable sites: agricultural land (farms ans areas where crops are grown), nature reserve, national park, military landuse (usually no access for civilians)
 
 Data regarding land cover and precipitations were downloaded from [Wapor](https://wapor.apps.fao.org/home/1),  
-One illustration
 
-![Alt text](/docs/images/bfast.jpeg?raw=true)
 
