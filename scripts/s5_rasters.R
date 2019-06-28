@@ -90,7 +90,7 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%
                "((A==1)+(A==2)+(A==4)+(B>0)+(C>0))*1"
 ))
 plot(raster(GDALinfo(surf_water_tif)))
-GDALinfo(surf_water_tif)
+gdalinfo(surf_water_tif)
 
 # UNDERGROUND WATER = 1, other =0
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
@@ -100,7 +100,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
                "((A==3)+(B==1))*1"
 ))
 plot(raster(GDALinfo(under_water_tif)))
-GDALinfo(under_water_tif)
+gdalinfo(under_water_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## ELECTRIC LINES 
@@ -228,7 +228,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
 ))
 
 plot(raster(unsuit_tif))
-GDALinfo(unsuit_tif)
+gdalinfo(unsuit_tif)
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++2 ALIGN RASTERS TO MASK

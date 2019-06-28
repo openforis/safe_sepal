@@ -24,7 +24,7 @@ res0        <- 30
 
 ## GET OSM DATA 
 # Countries' data on : http://download.geofabrik.de/
-# Info on data on : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+# Info on data on : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf, 
 
 url_osm         <- "http://download.geofabrik.de/africa/niger-latest-free.shp.zip"
 file_osm        <- "niger-latest-free.shp.zip"

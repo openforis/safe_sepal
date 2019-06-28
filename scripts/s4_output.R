@@ -60,8 +60,8 @@ unsuit_tif         <- paste0(data0dir,"unsuitable.tif")
 
 # srtm, elevation, slope, aspect
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-tmp_srtm_path         <- paste0(srtmdir, "tmp_srtm.tif")
-tmp_srtm_comp_path    <-paste0(srtmdir,"tmp_comp_srtm.tif")
+tmp_srtm_path         <- paste0(data0dir, "tmp_srtm.tif")
+tmp_srtm_comp_path    <-paste0(data0dir,"tmp_comp_srtm.tif")
 
 srtm_path             <- paste0(data0dir,"srtm.tif")
 elevation_path        <- paste0(data0dir,"elevation.tif")
@@ -72,14 +72,14 @@ aspect_path           <- paste0(data0dir,"aspect.tif")
 # BIOMASS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 biomass_path          <- paste0(biomassdir,"BiomassValue2018_geosahel.tif")
-tmp_biomass_comp      <- paste0(biomassdir,"tmp_comp_biomass_geosahel2018.tif")
+tmp_biomass_comp      <- paste0(data0dir,"tmp_comp_biomass_geosahel2018.tif")
 
 biomass_tif           <- paste0(data0dir,"biomass_geosahel2018.tif")
 
 # PRECIPITATION
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 preci_path          <- paste0(waterdir,"L1_PCP_18_clipped.tif") 
-tmp_preci_comp      <- paste0(waterdir,"tmp_comp_L1_PCP_18_clipped.tif")
+tmp_preci_comp      <- paste0(data0dir,"tmp_comp_L1_PCP_18_clipped.tif")
 
 preci_tif           <- paste0(data0dir,"preci_wapor2018.tif")
 
@@ -99,11 +99,11 @@ dist2boundaries  <- paste0(data0dir,"dist2boundaries.tif")
 
 
 tmp_mask_surf_water  <- paste0(data0dir,"tmp_mask_surf_water.tif")
-tmp_mask_dist2surf_water <- paste0(data0dir,"mask_dist2surf_water.tif")
+tmp_mask_dist2surf_water <- paste0(data0dir,"tmp_mask_dist2surf_water.tif")
 dist2surf_water  <- paste0(data0dir,"dist2surf_water.tif")
 
 tmp_mask_under_water  <- paste0(data0dir,"tmp_mask_under_water.tif")
-tmp_mask_dist2under_water <- paste0(data0dir,"mask_dist2under_water.tif")
+tmp_mask_dist2under_water <- paste0(data0dir,"tmp_mask_dist2under_water.tif")
 dist2under_water <- paste0(data0dir,"dist2under_water.tif")
 
 dist2water       <- paste0(data0dir,"dist2water.tif")

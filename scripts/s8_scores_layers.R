@@ -7,7 +7,7 @@
 input  <- dist2surf_water
 output <- score_surf_water
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A<500/30)*1+(A>=500/30)*(A<=1000/30)*2+(A>1000/30)*3"
