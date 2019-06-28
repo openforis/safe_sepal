@@ -24,10 +24,10 @@ For more [details](http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 One illustration of surface water
 ![Alt text](/docs/images/bfast.jpeg?raw=true)
 
-![surface water](imagesdir/dist2surf_water.png?raw=true)
+![surface water](/imagesdir/dist2surf_water.png?raw=true)
 
 One illustration of underground water
-![underground water](imagesdir/dist2_under_water.png?raw=true)
+![underground water](/imagesdir/dist2_under_water.png?raw=true)
 
 
 -surface water: drinking water, water_towers, water_works, water, reservoir, river, stream, canal, drain
