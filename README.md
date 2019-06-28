@@ -21,13 +21,14 @@ Some background elements
 The scripts you will find on this platform will enable you to download OpenStreetMap [data](http://download.geofabrik.de/) rapidly for your area of interest(AOI) and get a first idea of geographic features of the landscape.
 For more [details](http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf)
 
-One illustration of surface water
+#exemple
 ![Alt text](/docs/images/bfast.jpeg?raw=true)
 
-![surface water](rootdir/imagesdir/dist2surf_water.png?raw=true)
+One illustration of surface water
+![surface water](imagesdir/dist2surf_water.png?raw=true)
 
 One illustration of underground water
-![underground water](rootdir/imagesdir/dist2_under_water.png?raw=true)
+![underground water](imagesdir/dist2_under_water.png?raw=true)
 
 
 -surface water: drinking water, water_towers, water_works, water, reservoir, river, stream, canal, drain
