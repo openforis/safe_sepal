@@ -14,7 +14,8 @@
 # ++++ 7-UNSUITABLE AREAS Points of interestOSM" OpenStreetMap
 # ++++ 7-1-UNSUITABLE-LAND - "Land Use OSM" OpenStreetMap
 # ++++ 7-2-UNSUITABLE-WATER - "OSM" - OpenStreetMap
-
+mask <- raster(paste0(griddir,"mask.tif"))
+mask_path <- paste0(griddir,"mask.tif")
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +000 EXTRACT LAYERS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -134,8 +135,6 @@ table(waterways_osm$waterways_code)
 
 ## REPROJECT
 waterways_osm_ea<-spTransform(waterways_osm, crs(mask))
-plot(waterways_osm_ea)
-plot(aoi_ea,add=T)
 writeOGR(waterways_osm_ea, paste0(data0dir, "waterways_osm.shp"), layer="waterways_osm.shp", driver='ESRI Shapefile', overwrite=T)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
