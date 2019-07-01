@@ -4,6 +4,7 @@
 # +++2 ALIGN RASTERS TO MASK
 # +++3 DISTANCES TO FEATURES
 # +++4 SCORES TO FEATURES
+# +++5 MASK UNSUITABLE
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 mask <- raster(paste0(griddir,"mask.tif"))
 mask_path <- paste0(griddir,"mask.tif")
@@ -69,21 +70,22 @@ elevation_path        <- paste0(data0dir,"elevation.tif")
 slope_path            <- paste0(data0dir,"slope.tif")
 aspect_path           <- paste0(data0dir,"aspect.tif")
 
-# BIOMASS
+# BIOMASS - GEOSAHEL - VALUES 2018
+# http://sigsahel.info/ -> http://geosahel.info/Viewer.aspx?map=Analyse-Biomasse-Finale#
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 biomass_path          <- paste0(biomassdir,"BiomassValue2018_geosahel.tif")
 tmp_biomass_comp      <- paste0(data0dir,"tmp_comp_biomass_geosahel2018.tif")
 
 biomass_tif           <- paste0(data0dir,"biomass_geosahel2018.tif")
 
-# PRECIPITATION
+# PRECIPITATIONS - WAPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 preci_path          <- paste0(waterdir,"L1_PCP_18_clipped.tif") 
 tmp_preci_comp      <- paste0(data0dir,"tmp_comp_L1_PCP_18_clipped.tif")
 
 preci_tif           <- paste0(data0dir,"preci_wapor2018.tif")
 
-# LAND COVER
+# LAND COVER - WAPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 lc_path          <- paste0(lulcdir,"L1_LCC_15_clipped.tif")
 tmp_lc_comp      <- paste0(data0dir,"tmp_comp_L1_LCC_15_clipped.tif")
@@ -139,6 +141,7 @@ dist2biomass <- paste0(data0dir,"dist2biomass_geosahel2018.tif")
 
 score_surf_water <- paste0(data0dir,"score_surf_water.tif")
 score_under_water <- paste0(data0dir,"score_under_water.tif")
+#?score_water <- paste0(data0dir,"score_water.tif")
 score_preci <- paste0(data0dir,"score_preci.tif")
 score_slope <- paste0(data0dir,"score_slope.tif")
 score_boundaries <- paste0(data0dir,"score_boundaries.tif")
@@ -149,4 +152,16 @@ score_towns <- paste0(data0dir,"score_towns.tif")
 score_health <- paste0(data0dir,"score_health.tif")
 score_education <- paste0(data0dir,"score_education.tif")
 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++5 MASK UNSUITABLE
+tmp_mask_exclusion <- paste0(data0dir, "tmp_mask_exclusion.tif")
 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++6 RESULT - SUITABILITY MAP
+tmp_suitability_map <- paste0(data0dir, "tmp_suitability_map.tif")
+color_table_txt <- paste0(data0dir,'color_table.txt')
+tmp_suitability_map_byte <- paste0(data0dir, "tmp_suitability_map_byte.tif")
+#pct: pseudo color table
+tmp_suitability_map_pct <- paste0(data0dir, "tmp_suitability_map_pct.tif")
+
+suitability_map  <- paste0(data0dir, "suitability_map.tif")

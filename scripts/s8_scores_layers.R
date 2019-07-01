@@ -1,6 +1,17 @@
 # GIVE SCORES TO PARAMETERS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# DISTANCE TO SURFACE + UNDERGROUND WATER  
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+input  <- dist2water
+output <- score_water
+
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
+               input,
+               output,
+               "(A<500/30)*1+(A>=500/30)*(A<=1000/30)*2+(A>1000/30)*3"
+))
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## DISTANCE TO SURFACE WATER 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -18,7 +29,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
 input  <- dist2under_water
 output <- score_under_water
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A<500/30)*1+(A>=500/30)*(A<=1000/30)*2+(A>1000/30)*3"
@@ -29,7 +40,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%
 input  <- preci_tif
 output <- score_preci
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A>300*0.1)*1+(A>=100*0.1)*(A<=300*0.1)*2+(A<100*0.1)*3"
@@ -40,7 +51,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%
 input  <- slope_path
 output <- score_slope
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A>=2)*(A<4)*1+(A>=4)*(A<=10)*2+(A>=0)*(A<=1)*(A>10)*3"
@@ -52,7 +63,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%
 input  <- dist2boundaries
 output <- score_boundaries
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A>50000/30)*1+(A>=25000/30)*(A<=50000/30)*2+(A<25000/30)*3"
@@ -65,7 +76,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%
 input  <- biomass_tif
 output <- score_biomass
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A>3000)*1+(A>=1500)*(A<=3000)*2+(A<1500)*3"
@@ -76,7 +87,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%
 input  <- dist2electricity
 output <- score_electricity
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A<5000/30)*1+(A>=5000/30)*(A<=10000/30)*2+(A>10000/30)*3"
@@ -89,7 +100,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%
 input  <- dist2roads
 output <- score_roads
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A<=1000/30)*1+(A>1000/30)*(A<=5000/30)*2+(A>5000/30)*3"
@@ -101,7 +112,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%
 input  <- dist2towns
 output <- score_towns 
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A<5000/30)*1+(A>=5000/30)*(A<=10000/30)*2+(A>10000/30)*3"
@@ -114,7 +125,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%
 input  <- dist2health
 output <- score_health
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A<5000/30)*1+(A>=5000/30)*(A<=10000/30)*2+(A>10000/30)*3"
@@ -126,7 +137,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%
 input  <-  dist2education
 output <- score_education
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                input,
                output,
                "(A<5000/30)*1+(A>=5000/30)*(A<=10000/30)*2+(A>10000/30)*3"

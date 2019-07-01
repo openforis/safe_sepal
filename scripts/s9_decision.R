@@ -1,34 +1,33 @@
 # COMBINE FEATURES
 
-output  <- paste0(data0dir, "suitability_map.tif")
-
 system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"unsuit_land.tif"),
-               paste0(data0dir,"unsuit_wetland.tif"),
-               paste0(data0dir,"slope.tif"),
+               unsuit_land_tif,
+               unsuit_wetland_tif,
+               slope_path,
                
-               paste0(data0dir, "tmp_mask_exclusion.tif"),
+               tmp_mask_exclusion,
                "((A==1)+(B==1)+(C>20))>0"
 ))
 
 system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s -L %s  --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               paste0(data0dir,"score_surf_water.tif"),
-               paste0(data0dir,"score_under_water.tif"),
-               paste0(data0dir,"score_preci.tif"),
+               score_surf_water,
+               score_under_water,
+               #??dist2water
+               score_preci,
                
-               paste0(data0dir,"score_slope.tif"),
-               paste0(data0dir,"score_biomass.tif"),
-               paste0(data0dir,"score_roads.tif"),
-               paste0(data0dir,"score_borders.tif"),
+               score_slope,
+               score_biomass,
+               score_roads,
+               score_boundaries,
                
-               paste0(data0dir,"score_electricity.tif"),
-               paste0(data0dir,"score_towns.tif"),
-               paste0(data0dir,"score_health.tif"),
-               paste0(data0dir,"score_education.tif"),
+               score_electricity,
+               score_towns,
+               score_health,
+               score_education,
                
-               paste0(data0dir, "tmp_mask_exclusion.tif"),
+               tmp_mask_exclusion,
                
-               paste0(data0dir, "tmp_suitability_map.tif"),
+               tmp_suitability_map,
                
                "(1-L)*((A+B+C)*1+
                 (D+E+F+G)*2+
@@ -47,27 +46,27 @@ pct <- data.frame(cbind(c(0,23:69),
                         cols[3,]
 ))
 
-write.table(pct,paste0(data0dir,'color_table.txt'),row.names = F,col.names = F,quote = F)
+write.table(pct,color_table_txt,row.names = F,col.names = F,quote = F)
 
 ## Compress final result
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
-               paste0(data0dir, "tmp_suitability_map.tif"),
-               paste0(data0dir, "tmp_suitability_map_byte.tif")
+               tmp_suitability_map,
+               tmp_suitability_map_byte
 ))
 
 
 ################################################################################
 ## Add pseudo color table to result
 system(sprintf("(echo %s) | oft-addpct.py %s %s",
-               paste0(data0dir,'color_table.txt'),
-               paste0(data0dir, "tmp_suitability_map_byte.tif"),
-               paste0(data0dir, "tmp_suitability_map_pct.tif")
+               color_table_txt,
+               tmp_suitability_map_byte,
+               tmp_suitability_map_pct
 ))
 
 ## Compress final result
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
-               paste0(data0dir, "tmp_suitability_map_pct.tif"),
-               output
+               tmp_suitability_map_pct,
+               suitability_map
 ))
 
 

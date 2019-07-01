@@ -294,9 +294,8 @@ system(sprintf("gdaldem aspect -co COMPRESS=LZW %s %s",
                aspect_path
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## BIOMASS - GEOSAHEL - VALUES 2018
+## BIOMASS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# http://sigsahel.info/ -> http://geosahel.info/Viewer.aspx?map=Analyse-Biomasse-Finale#
 # COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
                biomass_path,
@@ -325,7 +324,7 @@ system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %
                ouput
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## PRECIPITATIONS - WAPOR
+## PRECIPITATIONS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
@@ -354,7 +353,7 @@ system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %
                ouput
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## LANDCOVER - WAPOR
+## LANDCOVER 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
