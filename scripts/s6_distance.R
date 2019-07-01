@@ -159,6 +159,42 @@ system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##  UNSUITABLE LAND-NATURE RESERVE/PARC
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               unsuit_land_reserves_tif,
+               mask_path,
+               tmp_mask_unsuit_land_reserves,
+               "A*(B>0)"
+))
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
+               tmp_mask_unsuit_land_reserves,
+               tmp_mask_dist2unsuit_land_reserves
+))
+system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
+               tmp_mask_dist2unsuit_land_reserves,
+               dist2unsuit_land_reserves
+))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##  UNSUITABLE-WETLANDS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               unsuit_wetland_tif,
+               mask_path,
+               tmp_mask_unsuit_wetland,
+               "A*(B>0)"
+))
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
+               tmp_mask_unsuit_wetland,
+               tmp_mask_dist2unsuit_wetland
+))
+system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
+               tmp_mask_dist2unsuit_wetland,
+               dist2unsuit_wetland
+))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  BIOMASS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",

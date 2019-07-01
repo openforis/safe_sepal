@@ -45,7 +45,6 @@ r
 
 # Function : adds "1" in each cell -- RUN MAY TAKE TIME
 set1f       <- function(x){rep(1, x)}
-rbox        <- init(r, fun=set1f, filename='rbox.tif', overwrite=TRUE)
 rbox        <- init(r, fun=set1f, filename=paste0(griddir,"rbox.tif"), overwrite=TRUE)
 rbox
 plot(rbox)

@@ -12,6 +12,22 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
                output,
                "(A<500/30)*1+(A>=500/30)*(A<=1000/30)*2+(A>1000/30)*3"
 ))
+
+#ALTERNATIVE !
+dist_a <- 500
+dist_b <- 1000
+suitIndex_a <- 1
+suitIndex_b <- 0
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
+               dist2water,
+               score_dist2water,
+               "(A< dist_a/30)*1 +
+                (A> dist_b/30)*0 +
+                (A>= dist_a/30)*(A<= dist_b/30)* (suitIndex_a +((A - dist_a)/(dist_b - dist_a)*(suitIndex_b - suitIndex_a))
+               "
+))
+
+
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## DISTANCE TO SURFACE WATER 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

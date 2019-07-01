@@ -293,7 +293,7 @@ writeOGR(edu_ea, paste0(data0dir, "education_osm.shp"), layer="education_osm.shp
 ## 7/ UNSUITABLE AREAS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 7-1/ UNSUITABLE-LAND - "Land Use OSM" OpenStreetMap
+## 7-1/ UNSUITABLE-LAND-NATURE RESERVE/PARC - "Land Use OSM" OpenStreetMap
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 unsuitable       <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
@@ -312,8 +312,24 @@ table(unsuitable$unsuit_code)
 
 ## REPROJECT
 unsuitable_ea        <- spTransform(unsuitable, crs(mask))
-writeOGR(unsuitable_ea, paste0(data0dir,"unsuit_land_osm.shp"), layer= "unsuit_land_osm.shp",driver='ESRI Shapefile', overwrite=T, encoding= "UTF-8")
+writeOGR(unsuitable_ea, paste0(data0dir,"unsuit_land_reserves_osm.shp"), layer= "unsuit_land_osm.shp",driver='ESRI Shapefile', overwrite=T, encoding= "UTF-8")
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## 7-1/ UNSUITABLE-LAND-MILITARY AREAS- "Land Use OSM" OpenStreetMap
+# MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+unsuitable       <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
+levels(as.factor(unsuitable$fclass))
+
+#0 is NODATA
+unsuitable$unsuit_code                                                  <-0
+#1 is military
+unsuitable$unsuit_code[which(grepl("military",unsuitable$fclass))]      <-1
+table(unsuitable$unsuit_code)
+
+## REPROJECT
+unsuitable_military_ea        <- spTransform(unsuitable, crs(mask))
+writeOGR(unsuitable_military_ea, paste0(data0dir,"unsuit_land__military_osm.shp"), layer= "unsuit_land_osm.shp",driver='ESRI Shapefile', overwrite=T, encoding= "UTF-8")
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 7-2/ UNSUITABLE-WATER - "OSM" - OpenStreetMap
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf

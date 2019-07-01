@@ -189,20 +189,31 @@ gdalinfo(education_tif)
 ## UNSUITABLE AREAS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## -1/ UNSUITABLE LAND - "Land Use OSM" OpenStreetMap
+## -1/ UNSUITABLE LAND-NATURE RESERVE/PARC- "Land Use OSM" OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 
-system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               unsuit_land_path,
+               unsuit_land_reserves_path,
                mask_path,
-               unsuit_land_tif,
+               unsuit_land_reserves_tif,
                "unst_cd"
 ))
-plot(raster(unsuit_land_tif))
-gdalinfo(unsuit_land_tif)
+plot(raster(unsuit_land_reserves_tif))
+gdalinfo(unsuit_land_reserves_tif)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## -2/ UNSUITABLE-WATER - "OSM" - OpenStreetMap
+## -2/ UNSUITABLE LAND - MILITARY AREAS- "Land Use OSM" OpenStreetMap
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
+               scriptdir,
+               unsuit_land_military_path,
+               mask_path,
+               unsuit_land_military_tif,
+               "unst_cd"
+))
+plot(raster(unsuit_land_military_tif))
+gdalinfo(unsuit_land_military_tif)
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## -3/ UNSUITABLE-WETLANDS - "OSM" - OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
@@ -215,20 +226,6 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
 plot(raster(unsuit_wetland_tif))
 gdalinfo(unsuit_wetland_tif)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## UNSUITABLE - COMPILATION
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-# RASTER : unsuitable = 1, other =0 
-system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               unsuit_land_tif,
-               unsuit_wetland_tif,
-               unsuit_tif,
-               "((A>0)+(B>0))*1"
-))
-
-plot(raster(unsuit_tif))
-gdalinfo(unsuit_tif)
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++2 ALIGN RASTERS TO MASK

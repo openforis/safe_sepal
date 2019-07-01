@@ -1,14 +1,5 @@
 # COMBINE FEATURES
 
-system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               unsuit_land_tif,
-               unsuit_wetland_tif,
-               slope_path,
-               
-               tmp_mask_exclusion,
-               "((A==1)+(B==1)+(C>20))>0"
-))
-
 system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s -L %s  --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                score_surf_water,
                score_under_water,
@@ -29,10 +20,15 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I 
                
                tmp_suitability_map,
                
-               "(1-L)*((A+B+C)*1+
-                (D+E+F+G)*2+
-                (H+I+J+K)*3)"
+               "(1-L)*((A+B+C)*0.5/3+
+                (D+E+F+G)*0.3/4+
+                (H+I+J+K)*0.2/4)"
 ))
+
+#On fait 1-L car dans L, on retrouve les éléments qui ne nous intéresse pas, donc qu'on veut masquer qui valent 1.
+#Dès lors, ceux là représentent les "constraints criteria" où, quand ils valent 1, c'est ce qu'on ne veut pas prendre en compte et 0, ce qu'on veut prendre en compte.
+#On va donc avoir, pour les éléments à masquer, (1-1=0) *(autres critères) -> ca donnera 0 -> ce qu'on veut 
+#lorsque le pixel auquel on s'intéresse n'a pas de valeur =1, ce qu'on veut masquer, alors ce sera simplement (1-0=1) * (autres critères)
 
 ####################  CREATE A PSEUDO COLOR TABLE
 
@@ -79,4 +75,25 @@ system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
 system(sprintf("rm -r -f %s",
                paste0(data0dir,"tmp*.tif")
 ))
+
+
+
+
+
+
+
+inputs = paste0(r_file, " ", ir_file) # noms de fichiers qui contiennent les bandes "rouge" et "ir"
+output = ndvi_file # nom du fichier de sortie    
+expr = '"im1b1==0?0:im2b1==0?0:((im2b1-im1b1)/(im2b1+im1b1)*1000)+1000"'
+cmdline = paste0(path_otb, 
+                 "otbcli_BandMathX -il ",
+                  inputs," -out",  
+                  output,
+                  " uint16 -ram 1024 -exp ",
+                  expr)
+system(cmdline) 
+
+
+
+
 

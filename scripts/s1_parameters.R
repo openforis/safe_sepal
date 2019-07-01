@@ -20,7 +20,7 @@ countrycode <- "NER"
 proj_ea     <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
 
 # DEFINE RESOLUTION
-res0        <- 30
+res0        <- 90
 
 ## GET OSM DATA 
 # Countries' data on : http://download.geofabrik.de/
