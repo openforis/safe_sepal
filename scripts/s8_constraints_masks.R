@@ -1,7 +1,7 @@
 #Constraints features
 
 
-system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s--co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                unsuit_land_reserves_tif,
                dist2unsuit_land_reserves,
                unsuit_land_military_tif,

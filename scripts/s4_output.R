@@ -5,6 +5,7 @@
 # +++3 DISTANCES TO FEATURES
 # +++4 SCORES TO FEATURES
 # +++5 MASK UNSUITABLE
+# +++6 RESULTS - SUITABILITY MAP
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 mask <- raster(paste0(griddir,"mask.tif"))
 mask_path <- paste0(griddir,"mask.tif")
@@ -164,7 +165,7 @@ score_education <- paste0(data0dir,"score_education.tif")
 tmp_mask_exclusion <- paste0(data0dir, "tmp_mask_exclusion.tif")
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +++6 RESULT - SUITABILITY MAP
+# +++6 RESULTS - SUITABILITY MAP
 tmp_suitability_map <- paste0(data0dir, "tmp_suitability_map.tif")
 color_table_txt <- paste0(data0dir,'color_table.txt')
 tmp_suitability_map_byte <- paste0(data0dir, "tmp_suitability_map_byte.tif")

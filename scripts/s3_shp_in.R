@@ -12,8 +12,9 @@
 # ++++ 5-HEALTH  - "Points of interestOSM" OpenStreetMap
 # ++++ 6-EDUCATION - "Points of interestOSM" OpenStreetMap
 # ++++ 7-UNSUITABLE AREAS Points of interestOSM" OpenStreetMap
-# ++++ 7-1-UNSUITABLE-LAND - "Land Use OSM" OpenStreetMap
-# ++++ 7-2-UNSUITABLE-WATER - "OSM" - OpenStreetMap
+# ++++ 7-1-UNSUITABLE-LAND-NATURE RESERVE/PARC - "Land Use OSM" OpenStreetMap
+# ++++ 7-2-UNSUITABLE-LAND-MILITARY AREAS- "Land Use OSM" OpenStreetMap
+# ++++ 7-3-UNSUITABLE-WATER - "OSM" - OpenStreetMap
 mask <- raster(paste0(griddir,"mask.tif"))
 mask_path <- paste0(griddir,"mask.tif")
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -315,7 +316,7 @@ unsuitable_ea        <- spTransform(unsuitable, crs(mask))
 writeOGR(unsuitable_ea, paste0(data0dir,"unsuit_land_reserves_osm.shp"), layer= "unsuit_land_osm.shp",driver='ESRI Shapefile', overwrite=T, encoding= "UTF-8")
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 7-1/ UNSUITABLE-LAND-MILITARY AREAS- "Land Use OSM" OpenStreetMap
+## 7-2/ UNSUITABLE-LAND-MILITARY AREAS- "Land Use OSM" OpenStreetMap
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 unsuitable       <- readOGR(paste0(tmpdir,"gis_osm_landuse_a_free_1.shp"))
@@ -331,7 +332,7 @@ table(unsuitable$unsuit_code)
 unsuitable_military_ea        <- spTransform(unsuitable, crs(mask))
 writeOGR(unsuitable_military_ea, paste0(data0dir,"unsuit_land__military_osm.shp"), layer= "unsuit_land_osm.shp",driver='ESRI Shapefile', overwrite=T, encoding= "UTF-8")
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 7-2/ UNSUITABLE-WATER - "OSM" - OpenStreetMap
+## 7-3/ UNSUITABLE-WATER - "OSM" - OpenStreetMap
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 wetland_osm      <- readOGR(paste0(tmpdir,"gis_osm_water_a_free_1.shp"))
