@@ -19,7 +19,7 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 # COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2boundaries,
-               dist2boundaries
+               tmp_dist2boundaries
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  WATER RESOURCES 
@@ -40,7 +40,7 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 # COMPRESS
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2surf_water,
-               dist2surf_water
+               tmp_dist2surf_water
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -58,16 +58,16 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2under_water,
-               dist2under_water
+               tmp_dist2under_water
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # WATER RESOURCES COMPILATION 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               dist2surf_water,
-               dist2under_water,
-               dist2water,
-               "A*B"
+               tmp_dist2surf_water,
+               tmp_dist2under_water,
+               tmp_dist2water,
+               "minimum(A,B)"
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -85,7 +85,7 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2electricity,
-               dist2electricity
+               tmp_dist2electricity
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -103,7 +103,7 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2roads,
-               dist2roads
+               tmp_dist2roads
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -121,7 +121,7 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2towns,
-               dist2towns 
+               tmp_dist2towns 
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  HEALTH 
@@ -138,7 +138,7 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2health,
-               dist2health
+               tmp_dist2health
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  EDUCATION 
@@ -155,7 +155,7 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2education,
-               dist2education
+               tmp_dist2education
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -173,7 +173,7 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2unsuit_land_reserves,
-               dist2unsuit_land_reserves
+               tmp_dist2unsuit_land_reserves
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -191,7 +191,7 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2unsuit_wetland,
-               dist2unsuit_wetland
+               tmp_dist2unsuit_wetland
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -209,6 +209,6 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s
 ))
 system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_mask_dist2biomass,
-               dist2biomass
+               tmp_dist2biomass
 ))
 

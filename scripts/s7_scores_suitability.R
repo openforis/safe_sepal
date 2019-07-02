@@ -4,7 +4,7 @@
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # DISTANCE TO SURFACE + UNDERGROUND WATER  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- dist2water
+input  <- tmp_dist2water
 output <- score_water
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
@@ -13,25 +13,37 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
                "(A<500/30)*1+(A>=500/30)*(A<=1000/30)*2+(A>1000/30)*3"
 ))
 
-#ALTERNATIVE !
+# #ALTERNATIVE !
+# dist_a <- 500
+# dist_b <- 1000
+# suitIndex_a <- 1
+# suitIndex_b <- 0
+# system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
+#                dist2water,
+#                score_dist2water,
+#                "(A< dist_a/30)*1 +
+#                 (A> dist_b/30)*0 +
+#                 (A>= dist_a/30)*(A<= dist_b/30)* (suitIndex_a +((A - dist_a)/(dist_b - dist_a)*(suitIndex_b - suitIndex_a))
+#                "
+# ))
+
 dist_a <- 500
 dist_b <- 1000
-suitIndex_a <- 1
+suitIndex_a <- 100
 suitIndex_b <- 0
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                dist2water,
                score_dist2water,
-               "(A< dist_a/30)*1 +
-                (A> dist_b/30)*0 +
-                (A>= dist_a/30)*(A<= dist_b/30)* (suitIndex_a +((A - dist_a)/(dist_b - dist_a)*(suitIndex_b - suitIndex_a))
+               "(A< dist_a/30)* suitIndex_a +
+                (A> dist_b/30)* suitIndex_b +
+                (A>= dist_a/30)*(A<= dist_b/30)* (suitIndex_a +((A - dist_a/30)/(dist_b/30 - dist_a/30)*(suitIndex_b - suitIndex_a))
                "
 ))
-
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## DISTANCE TO SURFACE WATER 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- dist2surf_water
+input  <- tmp_dist2surf_water
 output <- score_surf_water
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
@@ -42,7 +54,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # DISTANCE TO UNDERGROUND WATER  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- dist2under_water
+input  <- tmp_dist2under_water
 output <- score_under_water
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
@@ -76,7 +88,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  DISTANCE TO BORDERS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- dist2boundaries
+input  <- tmp_dist2boundaries
 output <- score_boundaries
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
@@ -100,7 +112,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  DISTANCE TO ELECTRIC LINES 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- dist2electricity
+input  <- tmp_dist2electricity
 output <- score_electricity
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
@@ -112,8 +124,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  DISTANCE TO ROADS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-input  <- dist2roads
+input  <- tmp_dist2roads
 output <- score_roads
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
@@ -125,7 +136,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  DISTANCE TO SETTLEMENTS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- dist2towns
+input  <- tmp_dist2towns
 output <- score_towns 
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
@@ -137,8 +148,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  DISTANCE TO HEALTH INFRASTRUCTURES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-input  <- dist2health
+input  <- tmp_dist2health
 output <- score_health
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
@@ -150,7 +160,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##  DISTANCE TO EDUCATION INFRASTRUCTURES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <-  dist2education
+input  <- tmp_dist2education
 output <- score_education
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",

@@ -21,6 +21,7 @@ packages(gdalUtils)
 packages(sp)
 packages(sf)
 packages(rgeos)
+packages(rasterVis)
 packages(plyr)
 
 packages(foreign)
