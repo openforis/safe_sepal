@@ -231,7 +231,7 @@ towns$towns_code[which(grepl("village",towns$fclass))]              <-3
 towns$towns_code[which(grepl("hamlet",towns$fclass))]               <-4
 #5 is national_capital
 towns$towns_code[which(grepl("national_capital",towns$fclass))]     <-5
-#5 is suburb
+#6 is suburb
 towns$towns_code[which(grepl("suburb",towns$fclass))]               <-6
 
 table(towns$towns_code)
@@ -302,9 +302,9 @@ head(unsuitable_reserves)
 #0 is NODATA
 unsuitable_reserves$unsuit_code                                                  <-0
 #1 is nature_reserve
-unsuitable_reserves$unsuit_code[which(grepl("nature_reserve",unsuitable$fclass))]<-1
+unsuitable_reserves$unsuit_code[which(grepl("nature_reserve",unsuitable_reserves$fclass))]<-1
 #2 is national_park
-unsuitable_reserves$unsuit_code[which(grepl("national_park",unsuitable$fclass))] <-2
+unsuitable_reserves$unsuit_code[which(grepl("national_park",unsuitable_reserves$fclass))] <-2
 
 table(unsuitable_reserves$unsuit_code)
 
@@ -325,7 +325,7 @@ levels(as.factor(unsuitable_military$fclass))
 #0 is NODATA
 unsuitable_military$unsuit_code                                                  <-0
 #1 is military
-unsuitable_military$unsuit_code[which(grepl("military",unsuitable$fclass))]      <-1
+unsuitable_military$unsuit_code[which(grepl("military",unsuitable_military$fclass))]      <-1
 table(unsuitable_military$unsuit_code)
 
 ## REPROJECT
@@ -340,16 +340,16 @@ head(unsuitable_military_ea)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 wetland_osm      <- readOGR(water_path_in)
 levels(as.factor(wetland_osm$fclass))
-
+head(wetland_osm)
 #0 is NODATA
 wetland_osm$water_code                                                  <-0
 #1 is wetland
 wetland_osm$water_code[which(grepl("wetland",wetland_osm$fclass))]      <-1
-
 table(wetland_osm$water_code)
+head(wetland_osm)
 
 ## REPROJECT
-wetland_osm_ea        <-spTransform(wetland_osm, proj4string(mask))
-wetland_osm_ea@data   <- water_osm_ea@data[,c("osm_id","water_code","fclass")]
+wetland_osm_ea        <-spTransform(wetland_osm,proj4string(mask))
+head(wetland_osm_ea)
 writeOGR(wetland_osm_ea, unsuit_wetland_path,layer=unsuit_wetland_shp,driver=format_shp, overwrite=T)
 head(wetland_osm_ea)

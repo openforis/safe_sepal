@@ -27,13 +27,13 @@ gdalinfo(boundaries_tif)
 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               water_pois_osm_path,
+               water_pois_path,
                mask_path,
-               water_pois_osm_tif,
+               water_pois_tif,
                "water_code"
 ))
-plot(raster(water_pois_osm_tif))
-gdalinfo(water_pois_osm_tif)
+plot(raster(water_pois_tif))
+gdalinfo(water_pois_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## -2/ WATER "OSM" - OpenStreetMap  
@@ -41,13 +41,13 @@ gdalinfo(water_pois_osm_tif)
 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               water_osm_path,
+               water_path,
                mask_path,
-               water_osm_tif,
+               water_tif,
                "water_code"
 ))
-plot(raster(water_osm_tif))
-gdalinfo(water_osm_tif)
+plot(raster(water_tif))
+gdalinfo(water_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## -3/ WATERWAYS "OSM" - OpenStreetMap
@@ -55,13 +55,13 @@ gdalinfo(water_osm_tif)
 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               waterways_osm_path,
+               waterways_path,
                mask_path,
-               waterways_osm_tif,
+               waterways_tif,
                "wtrwys_"
 ))
-plot(raster(waterways_osm_tif))
-gdalinfo(waterways_osm_tif)
+plot(raster(waterways_tif))
+gdalinfo(waterways_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## -4/ WATER "NATURAL OSM" - OpenStreetMap
@@ -69,13 +69,13 @@ gdalinfo(waterways_osm_tif)
 
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               water_natural_osm_path,
+               water_natural_path,
                mask_path,
-               water_natural_osm_tif,
+               water_natural_tif,
                "water_code"
 ))
-plot(raster(water_natural_osm_tif))
-gdalinfo(water_natural_osm_tif)
+plot(raster(water_natural_tif))
+gdalinfo(water_natural_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## WATER RESSOURCES - COMPILATION 
@@ -83,23 +83,23 @@ gdalinfo(water_natural_osm_tif)
 
 # SURFACE WATER = 1, other =0 
 system(sprintf("gdal_calc.py -A %s -B %s -C %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               water_pois_osm_tif,
-               water_osm_tif,
-               waterways_osm_tif,
+               water_pois_tif,
+               water_tif,
+               waterways_tif,
                surf_water_tif,
                "((A==1)+(A==2)+(A==4)+(B>0)+(C>0))*1"
 ))
-plot(raster(GDALinfo(surf_water_tif)))
+plot(raster(surf_water_tif))
 gdalinfo(surf_water_tif)
 
 # UNDERGROUND WATER = 1, other =0
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               water_pois_osm_tif,
-               water_natural_osm_tif,
+               water_pois_tif,
+               water_natural_tif,
                under_water_tif,
                "((A==3)+(B==1))*1"
 ))
-plot(raster(GDALinfo(under_water_tif)))
+plot(raster(under_water_tif))
 gdalinfo(under_water_tif)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -288,7 +288,8 @@ system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
                tmp_srtm_path,
                tmp_srtm_comp_path
 ))
-
+gdalinfo(tmp_srtm_path)
+plot(srtm_crop)
 # DEFINE MASK TO ALIGN ON
 mask   
 proj   <- proj4string(mask)
@@ -297,7 +298,7 @@ res    <- res(mask)[1]
 
 # DEFINE INPUT AND OUTPUT
 input  <- tmp_srtm_comp_path
-ouput  <- srtm_path 
+output  <- srtm_path 
 
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
                proj4string(mask),
@@ -308,7 +309,7 @@ system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %
                res(mask)[1],
                res(mask)[2],
                input,
-               ouput
+               output
 ))
 # COMPUTE ELEVATION
 system(sprintf("gdaldem hillshade -co COMPRESS=LZW %s %s",
@@ -333,11 +334,6 @@ system(sprintf("gdaldem aspect -co COMPRESS=LZW %s %s",
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BIOMASS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# COMPRESS
-system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
-               biomass_path,
-               tmp_biomass_comp
-))
 
 # DEFINE MASK TO ALIGN ON
 mask   
@@ -346,8 +342,8 @@ extent <- extent(mask)
 res    <- res(mask)[1]
 
 # DEFINE INPUT AND OUTPUT
-input  <- tmp_biomass_comp
-ouput  <- biomass_tif
+input  <- biomass_path
+output <- biomass_tif
 
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
                proj4string(mask),
@@ -358,7 +354,7 @@ system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %
                res(mask)[1],
                res(mask)[2],
                input,
-               ouput
+               output
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## PRECIPITATIONS 
@@ -376,7 +372,7 @@ res    <- res(mask)[1]
 
 # DEFINE INPUT AND OUTPUT
 input  <- tmp_preci_comp
-ouput  <- preci_tif
+output <- preci_tif
 
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
                proj4string(mask),
@@ -387,16 +383,16 @@ system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %
                res(mask)[1],
                res(mask)[2],
                input,
-               ouput
+               output
 ))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## LANDCOVER 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # COMPRESS
-system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
-               lc_path,
-               tmp_lc_comp
-))
+#system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
+#               lc_path,
+#               tmp_lc_comp
+#))
 
 # DEFINE MASK TO ALIGN ON
 mask   
@@ -405,8 +401,8 @@ extent <- extent(mask)
 res    <- res(mask)[1]
 
 # DEFINE INPUT AND OUTPUT
-input  <- tmp_lc_comp
-ouput  <- lc_tif
+input  <- lc_path
+output <- lc_tif
 
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
                proj4string(mask),
@@ -417,5 +413,5 @@ system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %
                res(mask)[1],
                res(mask)[2],
                input,
-               ouput
+               output
 ))

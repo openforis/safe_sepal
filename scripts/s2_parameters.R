@@ -12,22 +12,22 @@
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # DEFINE COUNTRY OF INTEREST
 # Codes on : http://kirste.userpage.fu-berlin.de/diverse/doc/ISO_3166.html
-countrycode <- "NER"
+countrycode         <- "NER"
 
 # DEFINE PROJECTION
 # Countries' coordinates on: https://epsg.io/
-# proj_ea   <- CRS("+init=epsg:32631")
-proj_ea     <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
+# proj_ea           <- CRS("+init=epsg:32631")
+proj_ea             <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
 
 # DEFINE RESOLUTION
-res0        <- 90
+res0                <- 90
 
 ## GET OSM DATA 
 # Countries' data on : http://download.geofabrik.de/
 # Info on data on : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf, 
 
-url_osm         <- "http://download.geofabrik.de/africa/niger-latest-free.shp.zip"
-file_osm        <- "osm.zip"
+url_osm             <- "http://download.geofabrik.de/africa/niger-latest-free.shp.zip"
+file_osm            <- "osm.zip"
 
 ## GET ELECTRICITY GRID DATA 
 #s4_data_in.R, line 39, you need to ask R to read the shapefile and head() to see what's inside the shapefile so not automatic

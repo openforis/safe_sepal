@@ -23,7 +23,7 @@ aoi_ea@bbox
 
 ## CREATE SHAPEFILE
 aoi_ea$code <- row(aoi_ea)[,1]
-writeOGR(aoi_ea,boundaries_level0_path,boundaries_level0_shp,format_shp,overwrite_layer = T)
+writeOGR(aoi_ea,boundaries_path,boundaries_shp,format_shp,overwrite_layer = T)
 
 ## CREATE RASTER LAYER BOX
 ## INTEGER COLUMNS AND LINES; DEFINE RESOLUTION, EXTENT 
@@ -54,7 +54,7 @@ plot(aoi_ea,add=TRUE)
 # RASTERIZE
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
-               boundaries_level0_path,
+               boundaries_path,
                rbox_path,
                mask_path,
                "code"
