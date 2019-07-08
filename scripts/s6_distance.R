@@ -194,21 +194,4 @@ system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
                tmp_dist2unsuit_wetland
 ))
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##  BIOMASS 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               biomass_tif ,
-               mask_path,
-               tmp_mask_biomass,
-               "A*(B>0)"
-))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int16 -distunits PIXEL %s %s -co BIGTIFF=YES",
-               tmp_mask_biomass,
-               tmp_mask_dist2biomass
-))
-system(sprintf("gdal_translate -co COMPRESS=LZW %s %s -co BIGTIFF=YES",
-               tmp_mask_dist2biomass,
-               tmp_dist2biomass
-))
 

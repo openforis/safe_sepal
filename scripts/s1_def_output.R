@@ -120,6 +120,7 @@ aspect_path                        <- paste0(data0dir,  "aspect.tif")
 biomass_path                       <- paste0(biomassdir,"BiomassValue2018_geosahel.tif")
 
 biomass_tif                        <- paste0(data0dir,"biomass_geosahel2018.tif")
+tmp_mask_biomass                   <- paste0(data0dir,"tmp_mask_biomass_geosahel2018.tif")
 
 # PRECIPITATIONS - WAPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -140,50 +141,51 @@ lc_tif                             <- paste0(data0dir,"lc_wapor_2015.tif")
 
 tmp_mask_boundaries                <- paste0(data0dir,"tmp_mask_boundaries.tif")
 tmp_mask_dist2boundaries           <- paste0(data0dir,"tmp_mask_dist2boundaries.tif")
-tmp_dist2boundaries                <- paste0(data0dir,"dist2boundaries.tif")
+tmp_dist2boundaries                <- paste0(data0dir,"tmp_dist2boundaries.tif")
 
 tmp_mask_surf_water                <- paste0(data0dir,"tmp_mask_surf_water.tif")
 tmp_mask_dist2surf_water           <- paste0(data0dir,"tmp_mask_dist2surf_water.tif")
-tmp_dist2surf_water                    <- paste0(data0dir,"dist2surf_water.tif")
+tmp_dist2surf_water                <- paste0(data0dir,"tmp_dist2surf_water.tif")
 
 tmp_mask_under_water               <- paste0(data0dir,"tmp_mask_under_water.tif")
 tmp_mask_dist2under_water          <- paste0(data0dir,"tmp_mask_dist2under_water.tif")
-tmp_dist2under_water               <- paste0(data0dir,"dist2under_water.tif")
+tmp_dist2under_water               <- paste0(data0dir,"tmp_dist2under_water.tif")
 
-tmp_dist2water                     <- paste0(data0dir,"dist2water.tif")
+tmp_dist2water                     <- paste0(data0dir,"tmp_dist2water.tif")
 
 tmp_mask_electricity               <- paste0(data0dir,"tmp_mask_electricity.tif")
 tmp_mask_dist2electricity          <- paste0(data0dir,"tmp_mask_dist2electricity.tif")
-tmp_dist2electricity               <- paste0(data0dir,"dist2electricity.tif")
+tmp_dist2electricity               <- paste0(data0dir,"tmp_dist2electricity.tif")
 
 tmp_mask_roads                     <- paste0(data0dir,"tmp_mask_roads.tif")
 tmp_mask_dist2roads                <- paste0(data0dir,"tmp_mask_dist2roads.tif")
-tmp_dist2roads                     <- paste0(data0dir,"dist2roads.tif")
+tmp_dist2roads                     <- paste0(data0dir,"tmp_dist2roads.tif")
 
 tmp_mask_towns                     <- paste0(data0dir,"tmp_mask_towns.tif")
 tmp_mask_dist2towns                <- paste0(data0dir,"tmp_mask_dist2towns.tif")
-tmp_dist2towns                     <- paste0(data0dir,"dist2towns.tif")
+tmp_dist2towns                     <- paste0(data0dir,"tmp_dist2towns.tif")
 
 tmp_mask_health                    <- paste0(data0dir,"tmp_mask_health.tif")
 tmp_mask_dist2health               <- paste0(data0dir,"tmp_mask_dist2health.tif")
-tmp_dist2health                    <- paste0(data0dir,"dist2health.tif")
+tmp_dist2health                    <- paste0(data0dir,"tmp_dist2health.tif")
 
 tmp_mask_education                 <- paste0(data0dir,"tmp_mask_education.tif")
 tmp_mask_dist2education            <- paste0(data0dir,"tmp_mask_dist2education.tif")
-tmp_dist2education                 <- paste0(data0dir,"dist2education.tif")
+tmp_dist2education                 <- paste0(data0dir,"tmp_dist2education.tif")
 
 tmp_mask_unsuit_land_reserves      <- paste0(data0dir,"tmp_mask_unsuit_land_reserves.tif")
 tmp_mask_dist2unsuit_land_reserves <- paste0(data0dir,"tmp_mask_dist2unsuit_land_reserves.tif")
-tmp_dist2unsuit_land_reserves      <- paste0(data0dir,"dist2unsuit_land_reserves.tif")
+tmp_dist2unsuit_land_reserves      <- paste0(data0dir,"tmp_dist2unsuit_land_reserves.tif")
 
 tmp_mask_unsuit_wetland            <- paste0(data0dir,"tmp_mask_unsuit_wetland.tif")
 tmp_mask_dist2unsuit_wetland       <- paste0(data0dir,"tmp_mask_dist2unsuit_wetland.tif")
-tmp_dist2unsuit_wetland            <- paste0(data0dir,"dist2unsuit_wetland.tif")
+tmp_dist2unsuit_wetland            <- paste0(data0dir,"tmp_dist2unsuit_wetland.tif")
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++6 SCORES TO FEATURES
 
 score_dist2water                   <- paste0(data0dir,"score_dist2water.tif")
+tmp_mask_score_dist2water          <- paste0(data0dir,"tmp_mask_score_dist2water.tif")
 score_dist2boundaries              <- paste0(data0dir,"score_dist2boundaries.tif")
 score_dist2roads                   <- paste0(data0dir,"score_dist2roads.tif")
 score_dist2electricity             <- paste0(data0dir,"score_dist2electricity.tif")
@@ -193,6 +195,7 @@ score_dist2education               <- paste0(data0dir,"score_dist2education.tif"
 
 score_slope                        <- paste0(data0dir,"score_slope.tif")
 score_preci                        <- paste0(data0dir,"score_preci.tif")
+score_preci_factmult               <- paste0(data0dir,"score_preci_factmult.tif")
 score_biomass_prod                 <- paste0(data0dir,"score_biomass_prod.tif")
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -210,3 +213,4 @@ tmp_suitability_map_byte           <- paste0(data0dir,"tmp_suitability_map_byte.
 tmp_suitability_map_pct            <- paste0(data0dir,"tmp_suitability_map_pct.tif")
 
 suitability_map                    <- paste0(data0dir,"suitability_map.tif")
+tmp_suitability_map_without_mask   <- paste0(data0dir,"suitability_map_without_mask.tif")

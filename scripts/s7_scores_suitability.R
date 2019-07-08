@@ -2,169 +2,141 @@
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# DISTANCE TO SURFACE + UNDERGROUND WATER  
+# DISTANCE TO WATER SOURCES : SURFACE + UNDERGROUND WATER  
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- tmp_dist2water
-output <- score_water
-
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A<500/30)*1+(A>=500/30)*(A<=1000/30)*2+(A>1000/30)*3"
-))
-
-# #ALTERNATIVE !
-# dist_a <- 500
-# dist_b <- 1000
-# suitIndex_a <- 1
-# suitIndex_b <- 0
-# system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-#                dist2water,
-#                score_dist2water,
-#                "(A< dist_a/30)*1 +
-#                 (A> dist_b/30)*0 +
-#                 (A>= dist_a/30)*(A<= dist_b/30)* (suitIndex_a +((A - dist_a)/(dist_b - dist_a)*(suitIndex_b - suitIndex_a))
-#                "
-# ))
-
-dist_a <- 500
-dist_b <- 1000
-suitIndex_a <- 100
-suitIndex_b <- 0
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               dist2water,
+               tmp_dist2water,
                score_dist2water,
-               "(A< dist_a/30)* suitIndex_a +
-                (A> dist_b/30)* suitIndex_b +
-                (A>= dist_a/30)*(A<= dist_b/30)* (suitIndex_a +((A - dist_a/30)/(dist_b/30 - dist_a/30)*(suitIndex_b - suitIndex_a))
-               "
+               "(A<=500/90)*100+(A>1000/90)*0+(A>500/90)*(A<=1000/90)*(100+((A-500/90)/(1000/90-500/90))*(0-100))"
 ))
 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## DISTANCE TO SURFACE WATER 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- tmp_dist2surf_water
-output <- score_surf_water
+plot(raster(score_dist2water))
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A<500/30)*1+(A>=500/30)*(A<=1000/30)*2+(A>1000/30)*3"
-))
+hist(raster(score_dist2water),
+     main = "Distribution of suitability index values",
+     xlab = "suitability index", ylab = "Frequency",
+     col = "springgreen")
+
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# DISTANCE TO UNDERGROUND WATER  
+##  DISTANCE TO BOUNDARIES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- tmp_dist2under_water
-output <- score_under_water
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A<500/30)*1+(A>=500/30)*(A<=1000/30)*2+(A>1000/30)*3"
+               tmp_dist2boundaries,
+               score_dist2boundaries,
+               "(A>=50000/90)*100+(A<25000/90)*0+(A>=25000/90)*(A<50000/90)*(100+((A-25000/90)/(50000/90-25000/90))*(0-100))"
 ))
+plot(raster(score_dist2boundaries))
+
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## PRECIPITATIONS - WAPOR
+##  DISTANCE TO ELECTRIC LINES 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- preci_tif
-output <- score_preci
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
+               tmp_dist2electricity,
+               score_dist2electricity,
+               "(A<=5000/90)*100+(A>=10000/90)*0+(A>5000/90)*(A<=10000/90)*(100+((A-5000/90)/(10000/90-5000/90))*(0-100))"
+))
+plot(raster(score_dist2electricity))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##  DISTANCE TO ROADS 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
+               tmp_dist2roads,
+               score_dist2roads,
+               "(A<=1000/90)*100+(A>5000/90)*0+(A>1000/90)*(A<=5000/90)*(100+((A-1000/90)/(5000/90-1000/90))*(0-100))"
+))
+plot(raster(score_dist2roads))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##  DISTANCE TO TOWNS 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A>300*0.1)*1+(A>=100*0.1)*(A<=300*0.1)*2+(A<100*0.1)*3"
+               tmp_dist2towns,
+               score_dist2towns,
+               "(A<=5000/90)*100+(A>10000/90)*0+(A>5000/90)*(A<=10000/90)*(100+((A-5000/90)/(10000/90-5000/90))*(0-100))"
 ))
+plot(raster(score_dist2towns))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##  DISTANCE TO HEALTH INFRASTRUCTURES
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
+               tmp_dist2health,
+               score_dist2health,
+               "(A<=5000/90)*100+(A>=10000/90)*0+(A>5000/90)*(A<=10000/90)*(100+((A-5000/90)/(10000/90-5000/90))*(0-100))"
+))
+plot(raster(score_dist2towns))
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##  DISTANCE TO EDUCATION INFRASTRUCTURES
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
+               tmp_dist2education,
+               score_dist2education,
+               "(A<=5000/90)*100+(A>10000/90)*0+(A>5000/90)*(A<=10000/90)*(100+((A-5000/90)/(10000/90-5000/90))*(0-100))"
+))
+plot(raster(score_dist2towns))
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## SLOPE
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- slope_path
-output <- score_slope
-
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A>=2)*(A<4)*1+(A>=4)*(A<=10)*2+(A>=0)*(A<=1)*(A>10)*3"
+               tmp_slope_path,
+               score_slope,
+               "(A>=2)*(A<=4)*100+(A>10)*(A<2)*0+(A>4)*(A<=10)*(100+((A-4)/(10-4))*(0-100))"
 ))
 
+plot(raster(score_slope))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##  DISTANCE TO BORDERS
+## PRECIPITATIONS - WAPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- tmp_dist2boundaries
-output <- score_boundaries
-
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A>50000/30)*1+(A>=25000/30)*(A<=50000/30)*2+(A<25000/30)*3"
+               preci_tif,
+               score_preci,
+               "(A>=300)*100+(A<100)*0+(A>=100)*(A<300)*(100+((A-100)/(300-100))*(0-100))"
+               
+))
+## Conversion factor : the pixel value in the downloaded data must be multiplied by 0.1 (or divided by 10)
+# So here, we will multiply the value that we want by ten since the values in the tif are 10 times higher than their real value
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
+               preci_tif,
+               score_preci_factmult,
+               "(A>=300*10)*100+(A<100*10)*0+(A>=100*10)*(A<300*10)*(100+((A-100)/(300-100))*(0-100))"
+               
 ))
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## ABOVE GROUND BIOMASS PRODUCTION -> CHECK RESULTS WITH GEOSAHEL - VALUES 2018 
 #  Also available on WAPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- biomass_tif
-output <- score_biomass
-
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A>3000)*1+(A>=1500)*(A<=3000)*2+(A<1500)*3"
-))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##  DISTANCE TO ELECTRIC LINES 
+##  BIOMASS 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- tmp_dist2electricity
-output <- score_electricity
-
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A<5000/30)*1+(A>=5000/30)*(A<=10000/30)*2+(A>10000/30)*3"
+# FOCUS ON NIGER
+system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               biomass_tif ,
+               mask_path,
+               tmp_mask_biomass,
+               "A*(B>0)"
 ))
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##  DISTANCE TO ROADS 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- tmp_dist2roads
-output <- score_roads
-
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A<=1000/30)*1+(A>1000/30)*(A<=5000/30)*2+(A>5000/30)*3"
+               tmp_mask_biomass,
+               score_biomass_prod,
+               "(A>3000)*100+(A<1500)*0+(A>=1500)*(A<=3000)*(100+((A-1500)/(3000-1500))*(0-100))"
 ))
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##  DISTANCE TO SETTLEMENTS 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- tmp_dist2towns
-output <- score_towns 
+plot(raster(score_biomass_prod))
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A<5000/30)*1+(A>=5000/30)*(A<=10000/30)*2+(A>10000/30)*3"
-))
+hist(raster(score_biomass_prod),
+     main = "Distribution of suitability index values",
+     xlab = "suitability index", ylab = "Frequency",
+     col = "springgreen")
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##  DISTANCE TO HEALTH INFRASTRUCTURES
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- tmp_dist2health
-output <- score_health
 
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A<5000/30)*1+(A>=5000/30)*(A<=10000/30)*2+(A>10000/30)*3"
-))
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-##  DISTANCE TO EDUCATION INFRASTRUCTURES
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-input  <- tmp_dist2education
-output <- score_education
-
-system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               input,
-               output,
-               "(A<5000/30)*1+(A>=5000/30)*(A<=10000/30)*2+(A>10000/30)*3"
-))

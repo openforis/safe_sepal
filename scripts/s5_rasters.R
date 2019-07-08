@@ -321,6 +321,17 @@ system(sprintf("gdaldem slope -co COMPRESS=LZW -p %s %s",
                srtm_path,
                tmp_slope_path
 ))
+
+output_slope <- gdaldem(mode="slope",
+                        input_dem=srtm_path,
+                        output=tmp_slope_path,
+                        p=TRUE,
+                        output_Raster=TRUE,
+                        verbose=TRUE)
+
+plot(output_slope,col=gray.colors(256))
+
+
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
                tmp_slope_path,
                slope_path

@@ -1,28 +1,48 @@
 # COMBINE FEATURES
 
-system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s -L %s  --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               score_surf_water,
-               score_under_water,
-               #??dist2water
-               score_preci,
-               
+system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               score_dist2water,
                score_slope,
-               score_biomass,
-               score_roads,
-               score_boundaries,
+               score_dist2roads,
                
-               score_electricity,
-               score_towns,
-               score_health,
-               score_education,
+               score_biomass_prod,
+               score_preci_factmult,
+               score_dist2boundaries,
+               
+               score_dist2electricity,
+               score_dist2towns,
+               score_dist2health,
+               score_dist2education,
                
                tmp_mask_exclusion,
                
                tmp_suitability_map,
                
-               "(1-L)*((A+B+C)*0.5/3+
-                (D+E+F+G)*0.3/4+
-                (H+I+J+K)*0.2/4)"
+               "(1-K)*((A+B+C)*0.5/3+
+                (D+E+F)*0.3/3+
+                (G+H+I+J)*0.2/4)"
+))
+
+
+system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               score_dist2water,
+               score_slope,
+               score_dist2roads,
+               
+               score_biomass_prod,
+               score_preci_factmult,
+               score_dist2boundaries,
+               
+               score_dist2electricity,
+               score_dist2towns,
+               score_dist2health,
+               score_dist2education,
+               
+               tmp_suitability_map_without_mask,
+               
+               "((A+B+C)*0.5/3+
+                (D+E+F)*0.3/3+
+                (G+H+I+J)*0.2/4)"
 ))
 
 #On fait 1-L car dans L, on retrouve les éléments qui ne nous intéresse pas, donc qu'on veut masquer qui valent 1.
