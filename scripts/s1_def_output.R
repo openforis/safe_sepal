@@ -17,10 +17,14 @@
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++1 OBJECTS FOR MASK 
 mask_path                          <- paste0(griddir,"mask.tif")
+mask                               <- raster(mask_path)
 boundaries_shp                     <- "boundaries_level0.shp"
 boundaries_path                    <- paste0(griddir,boundaries_shp)
 rbox_path                          <- paste0(griddir,"rbox.tif")
 
+boundaries_line_shp                <- "boundaries_line_level0.shp"
+boundaries_line_path               <- paste0(data0dir,boundaries_line_shp)
+boundaries_line_tif                <- paste0(data0dir,"boundaries_line.tif")
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++2 READ SHAPEFILES 
 pts_of_interest_path_in            <- paste0(tmpdir,"gis_osm_pois_free_1.shp")
@@ -98,94 +102,79 @@ unsuit_wetland_tif                 <- paste0(data0dir, "unsuit_wetland.tif")
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++4 ALIGN RASTERS TO MASK
 
-# srtm, elevation, slope, aspect
+# srtm, slope
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Path to downloaded SRTM tiles
 srtm_grid_path                     <- paste0(srtmdir, "srtm/tiles.shp")
 
 tmp_srtm_path                      <- paste0(data0dir,  "tmp_srtm.tif")
-tmp_srtm_comp_path                 <- paste0(data0dir,  "tmp_comp_srtm.tif")
 
 srtm_path                          <- paste0(data0dir,  "srtm.tif")
 elevation_path                     <- paste0(data0dir,  "elevation.tif")
 
 tmp_slope_path                     <- paste0(data0dir,  "tmp_slope.tif")
-slope_path                         <- paste0(data0dir,  "slope.tif")
-
-aspect_path                        <- paste0(data0dir,  "aspect.tif")
 
 # BIOMASS - GEOSAHEL - VALUES 2018
 # http://sigsahel.info/ -> http://geosahel.info/Viewer.aspx?map=Analyse-Biomasse-Finale#
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 biomass_path                       <- paste0(biomassdir,"BiomassValue2018_geosahel.tif")
-
 biomass_tif                        <- paste0(data0dir,"biomass_geosahel2018.tif")
 tmp_mask_biomass                   <- paste0(data0dir,"tmp_mask_biomass_geosahel2018.tif")
 
 # PRECIPITATIONS - WAPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 preci_path                         <- paste0(waterdir,"L1_PCP_18_clipped.tif") 
-tmp_preci_comp                     <- paste0(data0dir,"tmp_comp_L1_PCP_18_clipped.tif")
-
-preci_tif                          <- paste0(data0dir,"preci_wapor2018.tif")
+tmp_preci_tif                      <- paste0(data0dir,"tmp_preci_wapor2018.tif")
+preci_factmult                     <- paste0(data0dir,"preci_factmult_wapor2018.tif")
 
 # LAND COVER - WAPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 lc_path                            <- paste0(lulcdir,"L1_LCC_15_clipped.tif")
-#tmp_lc_comp                        <- paste0(data0dir,"tmp_comp_L1_LCC_15_clipped.tif")
-
 lc_tif                             <- paste0(data0dir,"lc_wapor_2015.tif")
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++5 DISTANCES TO FEATURES
 
-tmp_mask_boundaries                <- paste0(data0dir,"tmp_mask_boundaries.tif")
-tmp_mask_dist2boundaries           <- paste0(data0dir,"tmp_mask_dist2boundaries.tif")
 tmp_dist2boundaries                <- paste0(data0dir,"tmp_dist2boundaries.tif")
+tmp_comp_dist2boundaries           <- paste0(data0dir,"tmp_comp_dist2boundaries.tif")
+tmp_mask_dist2boundaries           <- paste0(data0dir,"tmp_mask_dist2boundaries.tif")
 
 tmp_mask_surf_water                <- paste0(data0dir,"tmp_mask_surf_water.tif")
-tmp_mask_dist2surf_water           <- paste0(data0dir,"tmp_mask_dist2surf_water.tif")
 tmp_dist2surf_water                <- paste0(data0dir,"tmp_dist2surf_water.tif")
 
 tmp_mask_under_water               <- paste0(data0dir,"tmp_mask_under_water.tif")
-tmp_mask_dist2under_water          <- paste0(data0dir,"tmp_mask_dist2under_water.tif")
 tmp_dist2under_water               <- paste0(data0dir,"tmp_dist2under_water.tif")
 
 tmp_dist2water                     <- paste0(data0dir,"tmp_dist2water.tif")
 
 tmp_mask_electricity               <- paste0(data0dir,"tmp_mask_electricity.tif")
-tmp_mask_dist2electricity          <- paste0(data0dir,"tmp_mask_dist2electricity.tif")
-tmp_dist2electricity               <- paste0(data0dir,"tmp_dist2electricity.tif")
+tmp_dist2elec                      <- paste0(data0dir,"tmp_dist2elec.tif")
 
 tmp_mask_roads                     <- paste0(data0dir,"tmp_mask_roads.tif")
-tmp_mask_dist2roads                <- paste0(data0dir,"tmp_mask_dist2roads.tif")
-tmp_dist2roads                     <- paste0(data0dir,"tmp_dist2roads.tif")
+tmp_dist2_roads                    <- paste0(data0dir,"tmp_dist2_roads.tif")
 
 tmp_mask_towns                     <- paste0(data0dir,"tmp_mask_towns.tif")
-tmp_mask_dist2towns                <- paste0(data0dir,"tmp_mask_dist2towns.tif")
-tmp_dist2towns                     <- paste0(data0dir,"tmp_dist2towns.tif")
+tmp_dist2_towns                    <- paste0(data0dir,"tmp_dist2_towns.tif")
 
 tmp_mask_health                    <- paste0(data0dir,"tmp_mask_health.tif")
-tmp_mask_dist2health               <- paste0(data0dir,"tmp_mask_dist2health.tif")
-tmp_dist2health                    <- paste0(data0dir,"tmp_dist2health.tif")
+tmp_dist2_health                   <- paste0(data0dir,"tmp_dist2_health.tif")
 
 tmp_mask_education                 <- paste0(data0dir,"tmp_mask_education.tif")
-tmp_mask_dist2education            <- paste0(data0dir,"tmp_mask_dist2education.tif")
-tmp_dist2education                 <- paste0(data0dir,"tmp_dist2education.tif")
+tmp_dist2_edu                      <- paste0(data0dir,"tmp_dist2_edu.tif")
 
 tmp_mask_unsuit_land_reserves      <- paste0(data0dir,"tmp_mask_unsuit_land_reserves.tif")
-tmp_mask_dist2unsuit_land_reserves <- paste0(data0dir,"tmp_mask_dist2unsuit_land_reserves.tif")
-tmp_dist2unsuit_land_reserves      <- paste0(data0dir,"tmp_dist2unsuit_land_reserves.tif")
+tmp_dist2_unsuit_land_reserves     <- paste0(data0dir,"tmp_dist2_unsuit_land_reserves.tif")
 
 tmp_mask_unsuit_wetland            <- paste0(data0dir,"tmp_mask_unsuit_wetland.tif")
-tmp_mask_dist2unsuit_wetland       <- paste0(data0dir,"tmp_mask_dist2unsuit_wetland.tif")
-tmp_dist2unsuit_wetland            <- paste0(data0dir,"tmp_dist2unsuit_wetland.tif")
+tmp_dist2_unsuit_wetland           <- paste0(data0dir,"tmp_dist2_unsuit_wetland.tif")
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++6 SCORES TO FEATURES
 
 score_dist2water                   <- paste0(data0dir,"score_dist2water.tif")
 tmp_mask_score_dist2water          <- paste0(data0dir,"tmp_mask_score_dist2water.tif")
+score_dist2surf_water              <- paste0(data0dir,"score_dist2surf_water.tif")
+score_dist2under_water             <- paste0(data0dir,"score_dist2under_water.tif")
 score_dist2boundaries              <- paste0(data0dir,"score_dist2boundaries.tif")
 score_dist2roads                   <- paste0(data0dir,"score_dist2roads.tif")
 score_dist2electricity             <- paste0(data0dir,"score_dist2electricity.tif")
@@ -194,7 +183,6 @@ score_dist2health                  <- paste0(data0dir,"score_dist2health.tif")
 score_dist2education               <- paste0(data0dir,"score_dist2education.tif")
 
 score_slope                        <- paste0(data0dir,"score_slope.tif")
-score_preci                        <- paste0(data0dir,"score_preci.tif")
 score_preci_factmult               <- paste0(data0dir,"score_preci_factmult.tif")
 score_biomass_prod                 <- paste0(data0dir,"score_biomass_prod.tif")
 
@@ -205,12 +193,10 @@ tmp_mask_exclusion                 <- paste0(data0dir, "tmp_mask_exclusion.tif")
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++8 RESULTS - SUITABILITY MAP
+suitability_map_mask               <- paste0(data0dir,"suitability_map_mask.tif")
+suitability_map_no_mask            <- paste0(data0dir,"suitability_map_no_mask.tif")
 
-tmp_suitability_map                <- paste0(data0dir,"tmp_suitability_map.tif")
 color_table_txt                    <- paste0(data0dir,'color_table.txt')
 tmp_suitability_map_byte           <- paste0(data0dir,"tmp_suitability_map_byte.tif")
 #pct: pseudo color table
 tmp_suitability_map_pct            <- paste0(data0dir,"tmp_suitability_map_pct.tif")
-
-suitability_map                    <- paste0(data0dir,"suitability_map.tif")
-tmp_suitability_map_without_mask   <- paste0(data0dir,"suitability_map_without_mask.tif")

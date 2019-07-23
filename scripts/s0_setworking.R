@@ -2,7 +2,7 @@
 # +001 SET WORKING ENVIRONMENT 
 # +002 CREATING OBJECTS ON R
 # +003 CREATING FOLDERS ON THE COMPUTER
-rm(list=ls())
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +000 INSTALLATION OF THE PACKAGES
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -73,4 +73,3 @@ dir.create(srtmdir,showWarnings = F)
 dir.create(elecdir,showWarnings = F)
 dir.create(imagesdir,showWarnings = F)
 
-setwd(dataindir)

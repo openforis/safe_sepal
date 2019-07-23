@@ -8,20 +8,8 @@
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CREATE A MASK LAYER
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## GET COUNTRY ADM 
 
-aoi         <- getData('GADM',
-                      path=admdir,
-                      country= countrycode,
-                      level=0)
-plot(aoi)
-
-## REPROJECT 
-aoi_ea      <- spTransform(aoi, proj_ea)
-plot(aoi_ea)
-aoi_ea@bbox
-
-## CREATE SHAPEFILE
+## CREATE SHAPEFILE OF COUNTRY ADM
 aoi_ea$code <- row(aoi_ea)[,1]
 writeOGR(aoi_ea,boundaries_path,boundaries_shp,format_shp,overwrite_layer = T)
 
@@ -60,10 +48,3 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "code"
 ))
 plot(raster(mask_path))
-
-# Compress mask
-# COMPRESS NOT NECESSARY - ALREADY WITHIN "oft-rasterize"
-#system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s " ,
-#               paste0(griddir, "mask.tif"),
-#               paste0(griddir, "mask0.tif")
-#))

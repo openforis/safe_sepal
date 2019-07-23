@@ -16,8 +16,6 @@
 # ++++ 7-2-UNSUITABLE-LAND-MILITARY AREAS- "Land Use OSM" OpenStreetMap
 # ++++ 7-3-UNSUITABLE-WATER - "OSM" - OpenStreetMap
 
-mask <- raster(mask_path)
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +000 EXTRACT LAYERS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -22,6 +22,37 @@ proj_ea             <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x
 # DEFINE RESOLUTION
 res0                <- 90
 
+## GET COUNTRY ADM 
+
+aoi         <- getData('GADM',
+                       path=admdir,
+                       country= countrycode,
+                       level=0)
+plot(aoi)
+
+## REPROJECT 
+aoi_ea      <- spTransform(aoi, proj_ea)
+plot(aoi_ea)
+aoi_ea@bbox
+
+## GET COUNTRY ADM 
+
+aoi_1         <- getData('GADM',
+                       path=admdir,
+                       country= countrycode,
+                       level=1)
+plot(aoi_1)
+
+## REPROJECT 
+aoi_ea_1      <- spTransform(aoi_1, proj_ea)
+plot(aoi_ea_1)
+aoi_ea_1@bbox
+
+boundaries_shp_1 <- "boundaries_level1.shp"
+boundaries_path_1<- paste0(griddir,boundaries_shp_1)
+                   
+writeOGR(aoi_ea_1,boundaries_path_1,boundaries_shp_1,format_shp,overwrite_layer = T)
+
 ## GET OSM DATA 
 # Countries' data on : http://download.geofabrik.de/
 # Info on data on : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf, 
@@ -45,3 +76,14 @@ elec_shp            <- paste0(elecdir,"330_132_66_33_20_kV_lines_NIGER.shp")
 url_srtm_grid       <- "http://www.gis-blog.com/wp-content/uploads/2017/01/srtm.zip"
 file_srtm           <- "srtm.zip"
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## ORFEO ToolBox
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+url_orfeo           <- "https://www.orfeo-toolbox.org/packages/OTB-6.6.1-Win64.zip"
+file_orfeo          <- "OTB-6.6.1-Win64.zip"
+#download.file(url = url_orfeo,
+#              destfile = paste0(rootdir,file_orfeo))
+
+#system(sprintf("unzip -o %s -d %s",
+#               paste0(rootdir,file_orfeo),
+#               rootdir))

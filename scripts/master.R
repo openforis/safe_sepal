@@ -1,3 +1,5 @@
+rm(list=ls())
+
 scriptdir  <- paste0(path.expand("~"),"/safe_sepal/scripts/")
 
 setwd(scriptdir)
