@@ -76,14 +76,4 @@ elec_shp            <- paste0(elecdir,"330_132_66_33_20_kV_lines_NIGER.shp")
 url_srtm_grid       <- "http://www.gis-blog.com/wp-content/uploads/2017/01/srtm.zip"
 file_srtm           <- "srtm.zip"
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## ORFEO ToolBox
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-url_orfeo           <- "https://www.orfeo-toolbox.org/packages/OTB-6.6.1-Win64.zip"
-file_orfeo          <- "OTB-6.6.1-Win64.zip"
-#download.file(url = url_orfeo,
-#              destfile = paste0(rootdir,file_orfeo))
 
-#system(sprintf("unzip -o %s -d %s",
-#               paste0(rootdir,file_orfeo),
-#               rootdir))
