@@ -1,9 +1,10 @@
-# +000 INSTALLATION OF THE PACKAGES
-# +001 SET WORKING ENVIRONMENT 
-# +002 CREATING OBJECTS ON R
-# +003 CREATING FOLDERS ON THE COMPUTER
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +000 INSTALLATION OF THE PACKAGES
+# +++1 SET WORKING ENVIRONMENT
+# +++2 CREATING OBJECTS ON R
+# +++3 CREATING FOLDERS ON THE COMPUTER
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 # +000 INSTALLATION OF THE PACKAGES
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 packages <- function(x){
@@ -32,15 +33,14 @@ packages(maptools)
 install_github('yfinegold/gfcanalysis')
 packages(gfcanalysis)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +001 SET WORKING ENVIRONMENT 
+
+# +++1 SET WORKING ENVIRONMENT 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 rootdir <- ("~/safe_sepal")
 setwd(rootdir)
 rootdir <- paste0(getwd(),"/")
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++s
-# +002 CREATING OBJECTS ON R
+# +++2 CREATING OBJECTS ON R
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 scriptdir <- paste0(rootdir,"scripts/")
 griddir   <- paste0(rootdir,"grid/")
@@ -56,8 +56,8 @@ srtmdir   <- paste0(rootdir,"data_in/srtm/")
 elecdir   <- paste0(rootdir,"data_in/electricity/")
 imagesdir <- paste0(rootdir,"data_in/images/")
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +003 CREATING FOLDERS ON THE COMPUTER
+
+# +++3 CREATING FOLDERS ON THE COMPUTER
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 dir.create(scriptdir,showWarnings = F)
 dir.create(griddir,showWarnings = F)

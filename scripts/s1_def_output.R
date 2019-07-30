@@ -1,10 +1,10 @@
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +000 OUTPUTS
+# +000 OUTPUTS - DEFINITION OF THE PATHS
 # +++1 OBJECTS FOR MASK
 # +++2 READ SHAPEFILES
 # +++3 SHAPEFILES TO RASTERS
 # +++4 ALIGN RASTERS TO MASK
-#      srtm, elevation, slope, aspect
+#      srtm, slope
 #      biomass
 #      precipitation
 #      land cover
@@ -16,6 +16,7 @@
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++1 OBJECTS FOR MASK 
+
 mask_path                          <- paste0(griddir,"mask.tif")
 mask                               <- raster(mask_path)
 boundaries_shp                     <- "boundaries_level0.shp"
@@ -25,8 +26,12 @@ rbox_path                          <- paste0(griddir,"rbox.tif")
 boundaries_line_shp                <- "boundaries_line_level0.shp"
 boundaries_line_path               <- paste0(data0dir,boundaries_line_shp)
 boundaries_line_tif                <- paste0(data0dir,"boundaries_line.tif")
+boundaries_shp_1                   <- "boundaries_level1.shp"
+boundaries_path_1                  <- paste0(griddir,boundaries_shp_1)
+
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++2 READ SHAPEFILES 
+
 pts_of_interest_path_in            <- paste0(tmpdir,"gis_osm_pois_free_1.shp")
 water_path_in                      <- paste0(tmpdir,"gis_osm_water_a_free_1.shp")
 waterways_path_in                  <- paste0(tmpdir,"gis_osm_waterways_free_1.shp")
@@ -102,7 +107,7 @@ unsuit_wetland_tif                 <- paste0(data0dir, "unsuit_wetland.tif")
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++4 ALIGN RASTERS TO MASK
 
-# srtm, slope
+# SRTM, slope
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Path to downloaded SRTM tiles
 srtm_grid_path                     <- paste0(srtmdir, "srtm/tiles.shp")
@@ -121,13 +126,13 @@ biomass_path                       <- paste0(biomassdir,"BiomassValue2018_geosah
 biomass_tif                        <- paste0(data0dir,"biomass_geosahel2018.tif")
 tmp_mask_biomass                   <- paste0(data0dir,"tmp_mask_biomass_geosahel2018.tif")
 
-# PRECIPITATIONS - WAPOR
+# PRECIPITATIONS - WaPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 preci_path                         <- paste0(waterdir,"L1_PCP_18_clipped.tif") 
 tmp_preci_tif                      <- paste0(data0dir,"tmp_preci_wapor2018.tif")
 preci_factmult                     <- paste0(data0dir,"preci_factmult_wapor2018.tif")
 
-# LAND COVER - WAPOR
+# LAND COVER - WaPOR
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 lc_path                            <- paste0(lulcdir,"L1_LCC_15_clipped.tif")
 lc_tif                             <- paste0(data0dir,"lc_wapor_2015.tif")
@@ -193,6 +198,7 @@ tmp_mask_exclusion                 <- paste0(data0dir, "tmp_mask_exclusion.tif")
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++8 RESULTS - SUITABILITY MAP
+
 suitability_map_mask               <- paste0(data0dir,"suitability_map_mask.tif")
 suitability_map_no_mask            <- paste0(data0dir,"suitability_map_no_mask.tif")
 

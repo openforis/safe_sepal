@@ -1,32 +1,26 @@
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +000 EXTRACT LAYERS
-# +++1 ELECTRIC LINES -> Electricity Transmission Network
-# +++2 GET OSM DATA
-# ++++ 1-WATER RESOURCES
-# ++++ 1-1-WATER "POIS" - Points of interest
-# ++++ 1-2-WATER "OSM" - OpenStreetMap
-# ++++ 1-3-WATERWAYS "OSM" - OpenStreetMap
-# ++++ 1-4-WATER "NATURAL OSM" - OpenStreetMap
-# ++++ 2-ROADS  "roads OSM" - OpenStreetMap
-# ++++ 3-RELIGION "POFW OSM" - Places of worship OpenStreetMap
-# ++++ 4-SETTLEMENTS - "places OSM" OpenStreetMap
-# ++++ 5-HEALTH  - "Points of interestOSM" OpenStreetMap
-# ++++ 6-EDUCATION - "Points of interestOSM" OpenStreetMap
-# ++++ 7-UNSUITABLE AREAS Points of interestOSM" OpenStreetMap
-# ++++ 7-1-UNSUITABLE-LAND-NATURE RESERVE/PARC - "Land Use OSM" OpenStreetMap
-# ++++ 7-2-UNSUITABLE-LAND-MILITARY AREAS- "Land Use OSM" OpenStreetMap
-# ++++ 7-3-UNSUITABLE-WATER - "OSM" - OpenStreetMap
+# +++1 electricity grid 
+# +++2 OpenStreetMap
+# ++++ 2.1. -WATER RESOURCES
+# ++++ 2.1.1-WATER "POIS" - Points of interest
+# ++++ 2.1.2-WATER "OSM" - OpenStreetMap
+# ++++ 2.1.3-WATERWAYS "OSM" - OpenStreetMap
+# ++++ 2.1.4-WATER "NATURAL OSM" - OpenStreetMap
+# ++++ 2.2. -ROADS  "roads OSM" - OpenStreetMap
+# ++++ 2.3. -RELIGION "POFW OSM" - Places of worship OpenStreetMap
+# ++++ 2.4. -TOWNS - "places OSM" OpenStreetMap
+# ++++ 2.5. -HEALTH  - "Points of interestOSM" OpenStreetMap
+# ++++ 2.6. -EDUCATION - "Points of interestOSM" OpenStreetMap
+# ++++ 2.7. -UNSUITABLE AREAS Points of interestOSM" OpenStreetMap
+# ++++ 2.7.1-UNSUITABLE-LAND-NATURE RESERVE/PARC - "Land Use OSM" OpenStreetMap
+# ++++ 2.7.2-UNSUITABLE-LAND-MILITARY AREAS- "Land Use OSM" OpenStreetMap
+# ++++ 2.7.3-UNSUITABLE-WATER - "OSM" - OpenStreetMap
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +000 EXTRACT LAYERS
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 1/ ELECTRIC LINES 
-# Electricity Transmission Network
-# https://energydata.info/dataset/niger-electricity-transmission-network-2015
-# See details on : http://africagrid.energydata.info/#
-# Distribution grid in Niger with neighbouring countries:
-# http://www.ecowrex.org/mapView/?mclayers=layerDistributionGrid&lat=1763532.7726153&lon=567395.7928025&zoom=7
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++1 electricity grid  
+# Electricity Transmission Network, https://energydata.info/dataset/niger-electricity-transmission-network-2015
 
 download.file(url = url_elec,
               destfile = paste0(elecdir,file_elec))
@@ -50,8 +44,7 @@ electricity_existing_ea <- spTransform(electricity, proj4string(mask))
 writeOGR(electricity_existing_ea, electricity_path, layer= electricity_shp, driver=format_shp, overwrite=T)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 2/ GET OSM DATA
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++2 OpenStreetMap
 
 download.file(url = url_osm,
               destfile = paste0(tmpdir,file_osm))
@@ -60,11 +53,10 @@ system(sprintf("unzip -o %s -d %s",
                paste0(tmpdir,file_osm),
                tmpdir))
 
+# ++++ 2.1. -WATER RESOURCES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 1/ WATER RESOURCES 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 1-1/ WATER "POIS" - Points of interest
+
+# ++++ 2.1.1-WATER "POIS" - Points of interest
 # MORE INFO page 10-11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 water_pois     <- readOGR(pts_of_interest_path_in)
@@ -87,8 +79,7 @@ table(water_pois$water_code)
 water_pois_ea<-spTransform(water_pois, proj4string(mask))
 writeOGR(water_pois_ea, water_pois_path, layer= water_pois_shp, driver=format_shp, overwrite=T)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 1-2/ WATER "OSM" - OpenStreetMap
+# ++++ 2.1.2-WATER "OSM" - OpenStreetMap
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 water_osm      <- readOGR(water_path_in)
@@ -98,9 +89,9 @@ levels(as.factor(water_osm$fclass))
 water_osm$water_code                                            <-0
 #1 is water
 water_osm$water_code[which(grepl("water",water_osm$fclass))]    <-1
-#1 is reservoir
+#2 is reservoir
 water_osm$water_code[which(grepl("reservoir",water_osm$fclass))]<-2
-#2 is river
+#3 is river
 water_osm$water_code[which(grepl("river",water_osm$fclass))]    <-3
 
 table(water_osm$water_code)
@@ -110,8 +101,8 @@ water_osm_ea        <-spTransform(water_osm, proj4string(mask))
 water_osm_ea@data   <- water_osm_ea@data[,c("osm_id","water_code","fclass")]
 writeOGR(water_osm_ea, water_path,layer=water_shp,driver=format_shp, overwrite=T)
 head(water_osm_ea)
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 1-3/ WATERWAYS "OSM" - OpenStreetMap 
+
+# ++++ 2.1.3-WATERWAYS "OSM" - OpenStreetMap
 # MORE INFO page 16 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 waterways_osm  <- readOGR(waterways_path_in)
@@ -134,8 +125,7 @@ table(waterways_osm$waterways_code)
 waterways_osm_ea<-spTransform(waterways_osm, proj4string(mask))
 writeOGR(waterways_osm_ea, waterways_path, layer=waterways_shp, driver=format_shp, overwrite=T)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 1-4/ WATER "NATURAL OSM" - OpenStreetMap
+# ++++ 2.1.4-WATER "NATURAL OSM" - OpenStreetMap
 # MORE INFO page 11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 water_natural  <- readOGR(natural_path_in)
@@ -152,8 +142,7 @@ table(water_natural$water_code)
 water_natural_ea<-spTransform(water_natural, proj4string(mask))
 writeOGR(water_natural_ea, water_natural_path, layer = water_natural_shp, driver=format_shp, overwrite=T)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 2/ ROADS  "roads OSM" - OpenStreetMap
+# ++++ 2.2. -ROADS  "roads OSM" - OpenStreetMap
 # MORE INFO page 14 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 roads          <- readOGR(roads_path_in)
@@ -178,8 +167,7 @@ table(roads$roads_code)
 roads_ea <-spTransform(roads, proj4string(mask))
 writeOGR(roads_ea, roads_path, layer=roads_shp, driver=format_shp, overwrite=T)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 3/ RELIGION "POFW OSM" - Places of worship OpenStreetMap
+# ++++ 2.3. -RELIGION "POFW OSM" - Places of worship OpenStreetMap
 # MORE INFO page 11 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 pofw        <- readOGR(places_of_worship_path_in)
@@ -210,8 +198,7 @@ table(pofw$religion_code)
 pofw_ea    <-spTransform(pofw, proj4string(mask))
 writeOGR(pofw_ea, religion_path, layer=religion_shp,driver=format_shp, overwrite=TRUE)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 4/ SETTLEMENTS - "places OSM" OpenStreetMap
+# ++++ 2.4. -TOWNS - "places OSM" OpenStreetMap
 # MORE INFO page 5 and 6 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 towns      <- readOGR(towns_path_in)
@@ -238,8 +225,7 @@ table(towns$towns_code)
 towns_ea            <-spTransform(towns, proj4string(mask))
 writeOGR(towns_ea, towns_path, layer= towns_shp,driver=format_shp, overwrite=T)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 5/ HEALTH  - "Points of interestOSM" OpenStreetMap
+# ++++ 2.5. -HEALTH  - "Points of interestOSM" OpenStreetMap
 # MORE INFO page 6-7 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 health      <- readOGR(pts_of_interest_path_in)
@@ -262,8 +248,7 @@ table(health$health_code)
 health_ea<-spTransform(health, proj4string(mask))
 writeOGR(health_ea, health_path, layer= health_shp,driver=format_shp, overwrite=T)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 6/ EDUCATION - "Points of interestOSM" OpenStreetMap
+# ++++ 2.6. -EDUCATION - "Points of interestOSM" OpenStreetMap
 # MORE INFO page 6-7 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 edu         <- readOGR(pts_of_interest_path_in)
@@ -286,11 +271,10 @@ table(edu$education_code)
 edu_ea <-spTransform(edu, proj4string(mask))
 writeOGR(edu_ea, education_path, layer=education_shp, driver=format_shp, overwrite=T)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 7/ UNSUITABLE AREAS 
+# ++++ 2.7. -UNSUITABLE AREAS Points of interestOSM" OpenStreetMap
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 7-1/ UNSUITABLE-LAND-NATURE RESERVE/PARC - "Land Use OSM" OpenStreetMap
+
+# ++++ 2.7.1-UNSUITABLE-LAND-NATURE RESERVE/PARC - "Land Use OSM" OpenStreetMap
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 unsuitable_reserves      <- readOGR(landuse_path_in)
@@ -313,8 +297,7 @@ writeOGR(unsuitable_reserves_ea, unsuit_land_reserves_path, layer= unsuit_land_r
 
 head(unsuitable_reserves_ea)
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 7-2/ UNSUITABLE-LAND-MILITARY AREAS- "Land Use OSM" OpenStreetMap
+# ++++ 2.7.2-UNSUITABLE-LAND-MILITARY AREAS- "Land Use OSM" OpenStreetMap
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 unsuitable_military       <- readOGR(landuse_path_in)
@@ -332,8 +315,8 @@ unsuitable_military_ea@data   <- unsuitable_military_ea@data[,c("osm_id","unsuit
 writeOGR(unsuitable_military_ea, unsuit_land_military_path, layer= unsuit_land_military_shp,driver=format_shp, overwrite=T)
 
 head(unsuitable_military_ea)
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 7-3/ UNSUITABLE-WATER - "OSM" - OpenStreetMap
+
+# ++++ 2.7.3-UNSUITABLE-WATER - "OSM" - OpenStreetMap
 # MORE INFO page 17 : http://download.geofabrik.de/osm-data-in-gis-formats-free.pdf
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 wetland_osm      <- readOGR(water_path_in)

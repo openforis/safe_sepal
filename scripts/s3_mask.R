@@ -1,19 +1,22 @@
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +000 CREATE A MASK LAYER
-# +++1 GET COUNTRY ADM (OSM)
-# +++2 REPROJECT
-# +++3 CREATE SHAPEFILE
-# +++4 CREATE RASTER LAYER BOX 
-# +++5 RASTERIZE
- 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# CREATE A MASK LAYER
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++1 COUNTRY ADM SHAPEFILE 
+# +++2 CREATE RASTER LAYER BOX 
+# +++3 RASTERIZE
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-## CREATE SHAPEFILE OF COUNTRY ADM
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++1 COUNTRY ADM SHAPEFILE
+# add column with numbers for rasterization later on  
 aoi_ea$code <- row(aoi_ea)[,1]
+#level0
 writeOGR(aoi_ea,boundaries_path,boundaries_shp,format_shp,overwrite_layer = T)
 
-## CREATE RASTER LAYER BOX
+#level1 (no rasterization later needeed)
+writeOGR(aoi_ea_1,boundaries_path_1,boundaries_shp_1,format_shp,overwrite_layer = T)
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++2 CREATE RASTER LAYER BOX
 ## INTEGER COLUMNS AND LINES; DEFINE RESOLUTION, EXTENT 
 res0
 ext0        <-  extent(aoi_ea)
@@ -39,7 +42,8 @@ rbox
 plot(rbox)
 plot(aoi_ea,add=TRUE)
 
-# RASTERIZE
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++3 RASTERIZATION
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                scriptdir,
                boundaries_path,

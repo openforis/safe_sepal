@@ -1,4 +1,6 @@
-# COMBINE FEATURES
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +000 COMBINATION OF CRITERIA 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                score_dist2water,
