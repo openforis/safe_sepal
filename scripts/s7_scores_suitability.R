@@ -22,7 +22,7 @@ system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Int32 --outfile=
 system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
                preci_factmult,
                score_preci_factmult,
-               "(A>=350)*100+(A<250)*0+(A>=250)*(A<350)*(100*(A-100)/(300-100))"
+               "(A>=350)*100+(A<250)*0+(A>=250)*(A<350)*(100*(A-100)/(350-100))"
 ))
 
 # +++2 SCORE FOR THE DISTANCE TO WATER RESOURCES
