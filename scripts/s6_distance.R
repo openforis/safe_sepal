@@ -25,11 +25,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
                tmp_mask_surf_water,
                "A*(B>0)"
 ))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
-               tmp_mask_surf_water,
-               tmp_mask_dist2surf_water 
-))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES",
                tmp_mask_surf_water,
                tmp_dist2surf_water 
 ))
@@ -42,7 +38,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
                tmp_mask_under_water,
                "A*(B>0)"
 ))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES",
                tmp_mask_under_water,
                tmp_dist2under_water
 ))
@@ -71,14 +67,11 @@ system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %
 
 # +++3 DISTANCE TO BOUNDARIES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES",
                boundaries_line_tif,
                tmp_dist2boundaries
 ))
-#system(sprintf("gdal_translate -ot Int32 -co COMPRESS=LZW %s %s -co overwrite",
-#               tmp_dist2boundaries,
-#               tmp_comp_dist2boundaries
-#))
+
 # FOCUS ON YOUR AOI : * mask
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
                tmp_dist2boundaries,
@@ -95,7 +88,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
                tmp_mask_unsuit_land_reserves,
                "A*(B>0)"
 ))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES",
                tmp_mask_unsuit_land_reserves,
                tmp_dist2_unsuit_land_reserves
 ))
@@ -108,7 +101,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
                tmp_mask_roads,
                "A*(B>0)"
 ))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES",
                tmp_mask_roads,
                tmp_dist2_roads
 ))
@@ -121,7 +114,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
                tmp_mask_electricity,
                "A*(B>0)"
 ))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES",
                tmp_mask_electricity,
                tmp_dist2elec
 ))
@@ -134,7 +127,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
                tmp_mask_towns,
                "A*(B>0)"
 ))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES",
                tmp_mask_towns,
                tmp_dist2_towns
 ))
@@ -147,7 +140,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
                tmp_mask_health,
                "A*(B>0)"
 ))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES",
                tmp_mask_health,
                tmp_dist2_health
 ))
@@ -160,7 +153,7 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
                tmp_mask_education,
                "A*(B>0)"
 ))
-system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES -co overwrite",
+system(sprintf("gdal_proximity.py -co COMPRESS=LZW -ot Int32 -distunits GEO %s %s -co BIGTIFF=YES",
                tmp_mask_education,
                tmp_dist2_edu
 ))

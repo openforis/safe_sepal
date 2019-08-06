@@ -185,7 +185,12 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                unsuit_land_reserves_tif,
                "unst_cd"
 ))
-
+ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+                unsuit_land_reserves_tif,
+                mask_path,
+                unsuit_mask_land_reserves_tif,
+                "A*(B>0)"
+ ))
 # ++++ 1.9.2. -UNSUITABLE LAND - MILITARY AREAS- "Land Use OSM" 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
@@ -205,6 +210,12 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                unsuit_wetland_tif,
                "water_code"
 ))
+ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+                unsuit_wetland_tif,
+                mask_path,
+                unsuit_mask_wetland_tif,
+                "A*(B>0)"
+ ))
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++2 ALIGN RASTERS WITH COUNTRY MASK
 
@@ -296,9 +307,6 @@ extent <- extent(mask)
 res    <- res(mask)[1]
 
 # DEFINE INPUT AND OUTPUT
-input  <- biomass_path
-output <- biomass_tif
-
 system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %s %s %s -overwrite",
                proj4string(mask),
                extent(mask)@xmin,
@@ -307,8 +315,15 @@ system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %
                extent(mask)@ymax,
                res(mask)[1],
                res(mask)[2],
-               input,
-               output
+               biomass_path,
+               biomass_tif
+))
+# FOCUS ON NIGER
+system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
+               biomass_tif,
+               mask_path,
+               tmp_mask_biomass,
+               "A*(B>0)"
 ))
 
 # ++++ 2.3 -PRECIPITATIONS 
@@ -329,6 +344,11 @@ system(sprintf("gdalwarp -co COMPRESS=LZW -t_srs \"%s\" -te %s %s %s %s -tr %s %
                res(mask)[2],
                preci_path,
                tmp_preci_tif
+))
+system(sprintf("gdal_calc.py -A %s --co=\"COMPRESS=LZW\" --type=Int32 --outfile=%s --calc=\"%s\" --overwrite",
+               tmp_preci_tif,
+               preci_factmult,
+               "A*0.1"
 ))
 # ++++ 2.4 -LANDCOVER
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

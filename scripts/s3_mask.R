@@ -12,7 +12,7 @@ aoi_ea$code <- row(aoi_ea)[,1]
 #level0
 writeOGR(aoi_ea,boundaries_path,boundaries_shp,format_shp,overwrite_layer = T)
 
-#level1 (no rasterization later needeed)
+#level1 (no rasterization later needeed, so no column added)
 writeOGR(aoi_ea_1,boundaries_path_1,boundaries_shp_1,format_shp,overwrite_layer = T)
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -52,3 +52,4 @@ system(sprintf("python %s/oft-rasterize_attr.py -v %s -i %s -o %s  -a %s",
                "code"
 ))
 plot(raster(mask_path))
+mask                               <- raster(mask_path)

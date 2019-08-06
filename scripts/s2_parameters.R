@@ -25,8 +25,8 @@ proj_ea             <- CRS("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++3 DEFINE RESOLUTION
-
 res0                <- 90
+
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++4 GET DATA
 
@@ -64,7 +64,6 @@ url_osm             <- "http://download.geofabrik.de/africa/niger-latest-free.sh
 file_osm            <- "osm.zip"
 
 ## electricity grid
-#s4_data_in.R, line 39, you need to ask R to read the shapefile and head() to see what's inside the shapefile so not automatic
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 url_elec            <- "https://development-data-hub-s3-public.s3.amazonaws.com/ddhfiles/145469/330132663320kvlinesniger.zip"

@@ -282,7 +282,7 @@ levels(as.factor(unsuitable_reserves$fclass))
 head(unsuitable_reserves)
 
 #0 is NODATA
-unsuitable_reserves$unsuit_code                                                  <-0
+unsuitable_reserves$unsuit_code                                                           <-0
 #1 is nature_reserve
 unsuitable_reserves$unsuit_code[which(grepl("nature_reserve",unsuitable_reserves$fclass))]<-1
 #2 is national_park
@@ -304,7 +304,7 @@ unsuitable_military       <- readOGR(landuse_path_in)
 levels(as.factor(unsuitable_military$fclass))
 
 #0 is NODATA
-unsuitable_military$unsuit_code                                                  <-0
+unsuitable_military$unsuit_code                                                           <-0
 #1 is military
 unsuitable_military$unsuit_code[which(grepl("military",unsuitable_military$fclass))]      <-1
 table(unsuitable_military$unsuit_code)
@@ -331,6 +331,6 @@ head(wetland_osm)
 
 ## REPROJECT
 wetland_osm_ea        <-spTransform(wetland_osm,proj4string(mask))
+wetland_osm_ea@data   <- wetland_osm_ea@data[,c("osm_id","water_code","fclass")]
 head(wetland_osm_ea)
 writeOGR(wetland_osm_ea, unsuit_wetland_path,layer=unsuit_wetland_shp,driver=format_shp, overwrite=T)
-head(wetland_osm_ea)

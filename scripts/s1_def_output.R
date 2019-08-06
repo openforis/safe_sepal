@@ -95,6 +95,7 @@ education_tif                      <- paste0(data0dir, "education.tif")
 unsuit_land_reserves_shp           <- "unsuit_land_reserves_osm.shp"
 unsuit_land_reserves_path          <- paste0(data0dir, unsuit_land_reserves_shp)
 unsuit_land_reserves_tif           <- paste0(data0dir, "unsuit_land_reserves.tif")
+unsuit_mask_land_reserves_tif      <- paste0(data0dir, "unsuit_mask_land_reserves.tif")
 
 unsuit_land_military_shp           <- "unsuit_land_military_osm.shp"
 unsuit_land_military_path          <- paste0(data0dir, unsuit_land_military_shp)
@@ -103,6 +104,7 @@ unsuit_land_military_tif           <- paste0(data0dir, "unsuit_land_military.tif
 unsuit_wetland_shp                 <- "unsuit_wetland_osm.shp"
 unsuit_wetland_path                <- paste0(data0dir, unsuit_wetland_shp)
 unsuit_wetland_tif                 <- paste0(data0dir, "unsuit_wetland.tif")
+unsuit_mask_wetland_tif            <- paste0(data0dir, "unsuit_mask_wetland.tif")
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++4 ALIGN RASTERS TO MASK
@@ -141,7 +143,6 @@ lc_tif                             <- paste0(data0dir,"lc_wapor_2015.tif")
 # +++5 DISTANCES TO FEATURES
 
 tmp_dist2boundaries                <- paste0(data0dir,"tmp_dist2boundaries.tif")
-tmp_comp_dist2boundaries           <- paste0(data0dir,"tmp_comp_dist2boundaries.tif")
 tmp_mask_dist2boundaries           <- paste0(data0dir,"tmp_mask_dist2boundaries.tif")
 
 tmp_mask_surf_water                <- paste0(data0dir,"tmp_mask_surf_water.tif")
@@ -177,15 +178,16 @@ tmp_dist2_unsuit_wetland           <- paste0(data0dir,"tmp_dist2_unsuit_wetland.
 # +++6 SCORES TO FEATURES
 
 score_dist2water                   <- paste0(data0dir,"score_dist2water.tif")
-tmp_mask_score_dist2water          <- paste0(data0dir,"tmp_mask_score_dist2water.tif")
-score_dist2surf_water              <- paste0(data0dir,"score_dist2surf_water.tif")
-score_dist2under_water             <- paste0(data0dir,"score_dist2under_water.tif")
 score_dist2boundaries              <- paste0(data0dir,"score_dist2boundaries.tif")
 score_dist2roads                   <- paste0(data0dir,"score_dist2roads.tif")
 score_dist2electricity             <- paste0(data0dir,"score_dist2electricity.tif")
+score_mask_dist2electricity        <- paste0(data0dir,"score_mask_dist2electricity.tif")
 score_dist2towns                   <- paste0(data0dir,"score_dist2towns.tif")
+score_mask_dist2towns              <- paste0(data0dir,"score_mask_dist2towns.tif")
 score_dist2health                  <- paste0(data0dir,"score_dist2health.tif")
+score_mask_dist2health             <- paste0(data0dir,"score_mask_dist2health.tif")
 score_dist2education               <- paste0(data0dir,"score_dist2education.tif")
+score_mask_dist2education          <- paste0(data0dir,"score_mask_dist2education.tif")
 
 score_slope                        <- paste0(data0dir,"score_slope.tif")
 score_preci_factmult               <- paste0(data0dir,"score_preci_factmult.tif")
@@ -194,15 +196,34 @@ score_biomass_prod                 <- paste0(data0dir,"score_biomass_prod.tif")
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++7 CONSTRAINTS FEATURES - MASK FOR UNSUITABLE
 
-tmp_mask_exclusion                 <- paste0(data0dir, "tmp_mask_exclusion.tif")
+tmp_preci_constraint_mask          <- paste0(data0dir, "tmp_preci_constraint_mask.tif")
+tmp_dist2water_constraint_mask     <- paste0(data0dir, "tmp_dist2water_constraint_mask.tif")
+tmp_slope_constraint_mask          <- paste0(data0dir, "tmp_slope_constraint_mask.tif")
+tmp_biomass_prod_constraint_mask   <- paste0(data0dir, "tmp_biomass_prod_constraint_mask.tif")
+tmp_wetland_constraint_mask        <- paste0(data0dir, "tmp_wetland_constraint_mask.tif")
+tmp_nat_reserves_constraint_mask   <- paste0(data0dir, "tmp_nat_reserves_constraint_mask.tif")
+tmp_nat_res_constraint_mask_crop   <- paste0(data0dir, "tmp_nat_reserves_constraint_mask_crop.tif")
+tmp_lc_water_constraint_mask       <- paste0(data0dir, "tmp_lc_constraint_mask.tif")
+tmp_lc_cropland_constraint_mask    <- paste0(data0dir, "tmp_lc_cropland_constraint_mask.tif")
 
+tmp_mask_constraints_combi         <- paste0(data0dir, "tmp_mask_constraints_combi.tif")
+
+
+tmp_mask_exclusion                 <- paste0(data0dir, "tmp_mask_exclusion.tif")
+tmp_mask_exclusion2                <- paste0(data0dir, "tmp_mask_exclusion2.tif")
+tmp_mask_exclusion3                <- paste0(data0dir, "tmp_mask_exclusion3.tif")
+tmp_mask_exclusion4                <- paste0(data0dir, "tmp_mask_exclusion4.tif")
+tmp_mask_exclusion5                <- paste0(data0dir, "tmp_mask_exclusion5.tif")
+tmp_mask_exclusion6                <- paste0(data0dir, "tmp_mask_exclusion6.tif")
+tmp_mask_exclusion7                <- paste0(data0dir, "tmp_mask_exclusion7.tif")
+tmp_mask_exclusion8                <- paste0(data0dir, "tmp_mask_exclusion8.tif")
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++8 RESULTS - SUITABILITY MAP
 
 suitability_map_mask               <- paste0(data0dir,"suitability_map_mask.tif")
 suitability_map_no_mask            <- paste0(data0dir,"suitability_map_no_mask.tif")
 
-color_table_txt                    <- paste0(data0dir,'color_table.txt')
-tmp_suitability_map_byte           <- paste0(data0dir,"tmp_suitability_map_byte.tif")
+#color_table_txt                    <- paste0(data0dir,'color_table.txt')
+#tmp_suitability_map_byte           <- paste0(data0dir,"tmp_suitability_map_byte.tif")
 #pct: pseudo color table
-tmp_suitability_map_pct            <- paste0(data0dir,"tmp_suitability_map_pct.tif")
+#tmp_suitability_map_pct            <- paste0(data0dir,"tmp_suitability_map_pct.tif")
