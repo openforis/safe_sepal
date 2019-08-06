@@ -125,21 +125,4 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I 
                tmp_mask_exclusion8,
                "((A<200)+(B>2000)+(C>20)+(D<1000)+(E<1000)+(F<24000)+(G==1)+(H==1)+(I==1)+(J==41)+(J==42)+(J==80))>0"
 ))
-#Combinaison of all the constraints criteria
 
-system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s -K %s --co=\"COMPRESS=LZW\" --type=Byte --outfile=%s --calc=\"%s\" --overwrite",
-               tmp_preci_constraint_mask,
-               tmp_dist2water_constraint_mask,
-               tmp_slope_constraint_mask,
-               tmp_biomass_prod_constraint_mask,
-               tmp_dist2wetland_constraint_mask,
-               tmp_dist2nat_res_constr_mask_crop,
-               unsuit_mask_wetland_tif,
-               tmp_lc_water_constraint_mask,
-               tmp_lc_cropland_constraint_mask,
-               unsuit_land_military_tif,
-               unsuit_mask_land_reserves_tif,
-               
-               tmp_mask_constraints_combi,
-               "(A+B+C+D+E+F+G+H+I+J+K)>0"
-))

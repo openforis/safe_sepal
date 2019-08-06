@@ -208,6 +208,7 @@ tmp_lc_cropland_constraint_mask    <- paste0(data0dir, "tmp_lc_cropland_constrai
 
 tmp_mask_constraints_combi         <- paste0(data0dir, "tmp_mask_constraints_combi.tif")
 
+tmp_mask_constraints_combi_1       <- paste0(data0dir, "tmp_mask_constraints_combi_1.tif")
 
 tmp_mask_exclusion                 <- paste0(data0dir, "tmp_mask_exclusion.tif")
 tmp_mask_exclusion2                <- paste0(data0dir, "tmp_mask_exclusion2.tif")
@@ -220,8 +221,9 @@ tmp_mask_exclusion8                <- paste0(data0dir, "tmp_mask_exclusion8.tif"
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++8 RESULTS - SUITABILITY MAP
 
+suitability_map_no_weight          <- paste0(data0dir,"suitability_map_no_weight.tif")
 suitability_map_mask               <- paste0(data0dir,"suitability_map_mask.tif")
-suitability_map_no_mask            <- paste0(data0dir,"suitability_map_no_mask.tif")
+
 
 #color_table_txt                    <- paste0(data0dir,'color_table.txt')
 #tmp_suitability_map_byte           <- paste0(data0dir,"tmp_suitability_map_byte.tif")
