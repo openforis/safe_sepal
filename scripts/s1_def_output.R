@@ -200,9 +200,9 @@ tmp_preci_constraint_mask          <- paste0(data0dir, "tmp_preci_constraint_mas
 tmp_dist2water_constraint_mask     <- paste0(data0dir, "tmp_dist2water_constraint_mask.tif")
 tmp_slope_constraint_mask          <- paste0(data0dir, "tmp_slope_constraint_mask.tif")
 tmp_biomass_prod_constraint_mask   <- paste0(data0dir, "tmp_biomass_prod_constraint_mask.tif")
-tmp_wetland_constraint_mask        <- paste0(data0dir, "tmp_wetland_constraint_mask.tif")
-tmp_nat_reserves_constraint_mask   <- paste0(data0dir, "tmp_nat_reserves_constraint_mask.tif")
-tmp_nat_res_constraint_mask_crop   <- paste0(data0dir, "tmp_nat_reserves_constraint_mask_crop.tif")
+tmp_dist2wetland_constraint_mask   <- paste0(data0dir, "tmp_dist2wetland_constraint_mask.tif")
+tmp_dist2nat_reserv_constraint_mask<- paste0(data0dir, "tmp_dist2nat_reserv_constraint_mask.tif")
+tmp_dist2nat_res_constr_mask_crop  <- paste0(data0dir, "tmp_dist2nat_res_constr_mask_crop.tif")
 tmp_lc_water_constraint_mask       <- paste0(data0dir, "tmp_lc_constraint_mask.tif")
 tmp_lc_cropland_constraint_mask    <- paste0(data0dir, "tmp_lc_cropland_constraint_mask.tif")
 
