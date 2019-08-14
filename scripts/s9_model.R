@@ -25,7 +25,7 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I 
                
                suitability_map_no_weight,
                
-               "(A+B+C+D+E+F+G+H+I+J)>0"
+               "(A*0.1+B*0.1+C*0.1+D*0.1+E*0.1+F*0.1+G*0.1+H*0.1+I*0.1+J*0.1)"
 ))
 
 system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I %s -J %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
@@ -42,16 +42,16 @@ system(sprintf("gdal_calc.py -A %s -B %s -C %s -D %s -E %s -F %s -G %s -H %s -I 
                score_mask_dist2health,
                score_mask_dist2education,
                
-               suitability_map_no_weight,
+               suitability_map_weighted,
                
-               "((A+B+C)*0.5/3+
-                (D+E+F)*0.3/3+
-                (G+H+I+J)*0.2/4)"
+               "((A*0.5/3+B*0.5/3+C*0.5/3)+
+                (D*0.3/3+E*0.3/3+F*0.3/3)+
+                (G*0.2/4+H*0.2/4+I*0.2/4+J*0.2/4))"
 ))
 system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --calc=\"%s\" --overwrite",
-               suitability_map_no_mask,
-               tmp_mask_exclusion,
-               suitability_map_mask,
+               suitability_map_weighted,
+               tmp_mask_constraints_combi,
+               suitab_constraints_map,
                "A*(1-B)"
 ))
 
@@ -72,9 +72,4 @@ system(sprintf("gdal_calc.py -A %s -B %s --co=\"COMPRESS=LZW\" --outfile=%s --ca
 system(sprintf("rm -r -f %s",
                paste0(data0dir,"tmp*.tif")
 ))
-
-
-
-
-
 

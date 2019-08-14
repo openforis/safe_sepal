@@ -203,29 +203,15 @@ tmp_biomass_prod_constraint_mask   <- paste0(data0dir, "tmp_biomass_prod_constra
 tmp_dist2wetland_constraint_mask   <- paste0(data0dir, "tmp_dist2wetland_constraint_mask.tif")
 tmp_dist2nat_reserv_constraint_mask<- paste0(data0dir, "tmp_dist2nat_reserv_constraint_mask.tif")
 tmp_dist2nat_res_constr_mask_crop  <- paste0(data0dir, "tmp_dist2nat_res_constr_mask_crop.tif")
-tmp_lc_water_constraint_mask       <- paste0(data0dir, "tmp_lc_constraint_mask.tif")
+tmp_lc_water_constraint_mask       <- paste0(data0dir, "tmp_lc_water_constraint_mask.tif")
 tmp_lc_cropland_constraint_mask    <- paste0(data0dir, "tmp_lc_cropland_constraint_mask.tif")
 
 tmp_mask_constraints_combi         <- paste0(data0dir, "tmp_mask_constraints_combi.tif")
-
 tmp_mask_constraints_combi_1       <- paste0(data0dir, "tmp_mask_constraints_combi_1.tif")
 
-tmp_mask_exclusion                 <- paste0(data0dir, "tmp_mask_exclusion.tif")
-tmp_mask_exclusion2                <- paste0(data0dir, "tmp_mask_exclusion2.tif")
-tmp_mask_exclusion3                <- paste0(data0dir, "tmp_mask_exclusion3.tif")
-tmp_mask_exclusion4                <- paste0(data0dir, "tmp_mask_exclusion4.tif")
-tmp_mask_exclusion5                <- paste0(data0dir, "tmp_mask_exclusion5.tif")
-tmp_mask_exclusion6                <- paste0(data0dir, "tmp_mask_exclusion6.tif")
-tmp_mask_exclusion7                <- paste0(data0dir, "tmp_mask_exclusion7.tif")
-tmp_mask_exclusion8                <- paste0(data0dir, "tmp_mask_exclusion8.tif")
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++8 RESULTS - SUITABILITY MAP
 
 suitability_map_no_weight          <- paste0(data0dir,"suitability_map_no_weight.tif")
-suitability_map_mask               <- paste0(data0dir,"suitability_map_mask.tif")
-
-
-#color_table_txt                    <- paste0(data0dir,'color_table.txt')
-#tmp_suitability_map_byte           <- paste0(data0dir,"tmp_suitability_map_byte.tif")
-#pct: pseudo color table
-#tmp_suitability_map_pct            <- paste0(data0dir,"tmp_suitability_map_pct.tif")
+suitability_map_weighted           <- paste0(data0dir,"suitability_map_weighted.tif")
+suitab_constraints_map             <- paste0(data0dir,"suitab_constraints_map.tif")

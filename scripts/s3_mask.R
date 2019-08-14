@@ -12,9 +12,6 @@ aoi_ea$code <- row(aoi_ea)[,1]
 #level0
 writeOGR(aoi_ea,boundaries_path,boundaries_shp,format_shp,overwrite_layer = T)
 
-#level1 (no rasterization later needeed, so no column added)
-writeOGR(aoi_ea_1,boundaries_path_1,boundaries_shp_1,format_shp,overwrite_layer = T)
-
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++2 CREATE RASTER LAYER BOX
 ## INTEGER COLUMNS AND LINES; DEFINE RESOLUTION, EXTENT 
